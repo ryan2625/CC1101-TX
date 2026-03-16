@@ -1,0 +1,8 @@
+{
+    "C_Cpp.default.compilerPath": "C:/msys64/mingw64/bin/gcc.exe",
+    "idf.currentSetup": "C:\\esp\\v5.5.3\\esp-idf",
+    "idf.portWin": "COM5",
+    "idf.customExtraVars": {
+        "IDF_TARGET": "esp32"
+    }
+}
