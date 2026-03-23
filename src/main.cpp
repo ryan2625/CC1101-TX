@@ -19,7 +19,7 @@ extern "C" {
 #include "freertos/task.h"
 }
 
-// Register values from the CC1101 datasheet
+// Register values from the CC1101 datasheet  //
 // ================= STROBES ================ //
 constexpr uint8_t CC1101_STROBE_SRES      = 0x30;
 constexpr uint8_t CC1101_STROBE_STX       = 0x35;
@@ -62,13 +62,21 @@ constexpr uint8_t CC1101_REG_FIFO         = 0x3F;
 constexpr uint8_t CC1101_VALUE_FREQ2      = 0x0C;
 constexpr uint8_t CC1101_VALUE_FREQ1      = 0x1D;
 constexpr uint8_t CC1101_VALUE_FREQ0      = 0x8A;
-// 2-FSK Modulation, Sync Mode
-constexpr uint8_t CC1101_VALUE_MDMCFG2    = 0x03;
 // Deviation Mantissa, Exponent
 constexpr uint8_t CC1101_VALUE_DEVIATN    = 0x40;
+// 2-FSK Modulation, Sync Mode
+constexpr uint8_t CC1101_VALUE_MDMCFG2    = 0x03;
 // Data rate (25 kBaud)
-constexpr uint8_t CC1101_VALUE_MDMCFG4    = 0x89; // DRATE_E
-constexpr uint8_t CC1101_VALUE_MDMCFG3    = 0xF8; // DRATE_M
+constexpr uint8_t CC1101_VALUE_MDMCFG4    = 0x89;
+constexpr uint8_t CC1101_VALUE_MDMCFG3    = 0xF8; 
+// Sync Word / Preamble Bits pkt len
+constexpr uint8_t CC1101_VALUE_MDMCFG1    = 0xF8; //TODO
+constexpr uint8_t CC1101_VALUE_SYNC1      = 0xF8; //TODO
+constexpr uint8_t CC1101_VALUE_SYNC0      = 0xF8; //TODO
+constexpr uint8_t CC1101_VALUE_PKTCTRL0   = 0xF8; //TODO
+constexpr uint8_t CC1101_VALUE_TXFIFO     = 0xF8; //TODO
+constexpr uint8_t CC1101_VALUE_FIFOTHR    = 0xF8; //TODO
+
 // FIFO threshold config
 constexpr uint8_t CC1101_VALUE_IOCFG0     = 0x02;
 // Transmit power
