@@ -10,6 +10,7 @@
 #include "esp_log.h"
 #include <cstdint>
 #include <string>
+#include "c1101.h"
 
 extern "C" {
 #include "driver/spi_master.h"
@@ -58,29 +59,28 @@ constexpr uint8_t CC1101_REG_FIFO         = 0x3F;
 // =========================================== //
 
 // ================== VALUES ================= //
-// Frequency (315 MHz)
-constexpr uint8_t CC1101_VALUE_FREQ2      = 0x0C;
-constexpr uint8_t CC1101_VALUE_FREQ1      = 0x1D;
-constexpr uint8_t CC1101_VALUE_FREQ0      = 0x8A;
-// Deviation Mantissa, Exponent
-constexpr uint8_t CC1101_VALUE_DEVIATN    = 0x40;
-// 2-FSK Modulation, Sync Mode
-constexpr uint8_t CC1101_VALUE_MDMCFG2    = 0x03;
-// Data rate (25 kBaud)
-constexpr uint8_t CC1101_VALUE_MDMCFG4    = 0x89;
-constexpr uint8_t CC1101_VALUE_MDMCFG3    = 0xF8; 
-// Sync Word / Preamble Bits pkt len
-constexpr uint8_t CC1101_VALUE_MDMCFG1    = 0xF8; //TODO
-constexpr uint8_t CC1101_VALUE_SYNC1      = 0xF8; //TODO
-constexpr uint8_t CC1101_VALUE_SYNC0      = 0xF8; //TODO
-constexpr uint8_t CC1101_VALUE_PKTCTRL0   = 0xF8; //TODO
-constexpr uint8_t CC1101_VALUE_TXFIFO     = 0xF8; //TODO
-constexpr uint8_t CC1101_VALUE_FIFOTHR    = 0xF8; //TODO
+constexpr uint8_t CC1101_VALUE_FREQ2      = 0x0C; // frequency 315 MHz
+constexpr uint8_t CC1101_VALUE_FREQ1      = 0x1D; // frequency 315 MHz
+constexpr uint8_t CC1101_VALUE_FREQ0      = 0x8A; // frequency 315 MHz
 
-// FIFO threshold config
-constexpr uint8_t CC1101_VALUE_IOCFG0     = 0x02;
-// Transmit power
-constexpr uint8_t CC1101_VALUE_PATABLE    = 0x51;
+constexpr uint8_t CC1101_VALUE_DEVIATN    = 0x40; // deviation m & e
+
+constexpr uint8_t CC1101_VALUE_MDMCFG2    = 0x03; // 2fsk, sync mode
+
+constexpr uint8_t CC1101_VALUE_MDMCFG4    = 0x89; // 25k baud drate e
+constexpr uint8_t CC1101_VALUE_MDMCFG3    = 0xF8; // drate m
+
+constexpr uint8_t CC1101_VALUE_MDMCFG1    = 0x22; // num preamble
+constexpr uint8_t CC1101_VALUE_SYNC1      = 0xD3; // sync words
+constexpr uint8_t CC1101_VALUE_SYNC0      = 0x91; // sync word
+constexpr uint8_t CC1101_VALUE_PKTLEN     = 0x0A; // PKT LEN 10
+constexpr uint8_t CC1101_VALUE_FIFOTHR    = 0x0E; // threshold 5 bytes in tx
+constexpr uint8_t CC1101_VALUE_PKTCTRL0   = 0x00; // fixed pkt mode
+constexpr uint8_t CC1101_VALUE_MCSM1      = 0x00; // txoffstate
+
+constexpr uint8_t CC1101_VALUE_IOCFG0     = 0x02; //GDO0 cfg
+
+constexpr uint8_t CC1101_VALUE_PATABLE    = 0x51; // power level
 constexpr uint8_t CC1101_DUMMY_BYTE       = 0x00;
 // =========================================== //
 
@@ -217,9 +217,98 @@ extern "C" void app_main(void)
         2,
         "POWER"
     );
+    // Simple helper function to read back the registers we just programmed for debugging purposes
+    log_reg_values(cc1101);
     // ================= END CONFIGURE PARAMETERS SECTION =================== //
 
     // ====================== CONFIGURE FIFO SECTION ======================== //
+    // SYNC WORD
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_SYNC1, false, true),
+            CC1101_VALUE_SYNC1,
+            CC1101_VALUE_SYNC0
+        },
+        3,
+        "SYNC WORD"
+    );
+
+    // PREAMBLE LENGTH
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_MDMCFG1, false, false),
+            CC1101_VALUE_MDMCFG1
+        },
+        2,
+        "PREAMBLE"
+    );
+
+// SYNC MODE ( & MOD FORMAT)
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_MDMCFG2, false, false),
+            CC1101_VALUE_MDMCFG2
+        },
+        2,
+        "SYNC MODE"
+    );
+
+// PACKET LENGTH MODE
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_PKTCTRL0, false, false),
+            CC1101_VALUE_PKTCTRL0
+        },
+        2,
+        "PKTCTRL0"
+    );
+
+    // FIXED PACKET LENGTH
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_PKTLEN, false, false),
+            CC1101_VALUE_PKTLEN
+        },
+        2,
+        "PKTLEN"
+);
+
+    // TXOFF MODE
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_MCSM1, false, false),
+            CC1101_VALUE_MCSM1
+        },
+        2,
+        "TXOFF MODE"
+    );
+
+    // WRITE TO TX FIFO
+        transmit_data(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_REG_FIFO, false, true),
+
+        },
+        1,
+        "TX FIFO"
+    );
+
+    // ENTER TX MODE
+    transmit_data(
+        cc1101,
+        (uint8_t[]){
+            CC1101_STROBE_STX
+        },
+        1,
+        "TX MODE"
+    );
 
     // ==================== END CONFIGURE FIFO SECTION ====================== //
 
