@@ -471,7 +471,7 @@ Page 77: Modulation Format Value Mappings in the `MDMCFG2.MOD_FORMAT` Field
 </div>
 
 ## Scientific Notation
-2-FSK works by shifting the frequency by an amount called the 'deviation.' The larger the deviation is, the easier it is for a radio to interpret incoming signals. To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. The mantissa allows fine adjustment of the deviation, while the exponent scales the deviation exponentially. These concepts are also used in [Scientific Notation](https://en.wikipedia.org/wiki/Scientific_notation). The mantissa and exponent values are configured in the `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` fields respectively. 
+2-FSK works by shifting the frequency by an amount called the 'deviation.' The larger the deviation is, the easier it is for a radio to interpret incoming signals. To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. The mantissa allows fine adjustment of the deviation, while the exponent scales the deviation exponentially. These concepts are also used in [Scientific Notation](https://en.wikipedia.org/wiki/Scientific_notation). The mantissa and exponent values are configured in the `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` fields respectively at address `0x15`. 
 
 > [!NOTE]
 > For example, 300 written in scientific notation is 3 * 10<sup>2</sup>. 3 is the mantissa, and 2 is the exponent. We can see that changing the value of the exponent will cause a more drastic change in the result of this equation than changing the mantissa.
