@@ -105,7 +105,7 @@ Using the `FOCCFG` register as an example, suppose we want to set the `FOC_PRE_K
 </div>
 <br>
 
-To preserve all other default values while only updating the `FOC_PRE_K` field, the resulting byte we send after our [header byte](#headerbyte) will be `0011 1110` (or `0x3E` in hexadecimal). The table below shows the exact bit changes when we update this register.
+To preserve all other default values while only updating the `FOC_PRE_K` field, the resulting byte we send after our [header byte](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) will be `0011 1110` (or `0x3E` in hexadecimal). The table below shows the exact bit changes when we update this register.
 <div align="center">
 
 | Bits | Field             | Default | New Value |
@@ -426,7 +426,6 @@ Page 75: Frequency Registers
 
 ### Setting the Frequency in C++
 Most of the coding examples will be shown in the [Sending Data in C++](#7-sending-data-in-c) section of this guide. With that said, it will be helpful to see the implementation of setting at least one parameter for right now. We will use the value we calculated earlier of FREQ ≈ 793,994 that corresponds to setting the frequency to 315 MHz. 
-<a name='headerbyte'></a>
 
 - Communication with the CC1101 starts with a header (or transaction) byte [following this format](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) outlined in my first guide.
     - Set bit position 7 of the byte to `0` to use write mode.
