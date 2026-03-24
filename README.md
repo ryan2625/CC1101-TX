@@ -326,7 +326,7 @@ Every radio transmission has specific parameters that must be configured, regard
 
 - **Section 24: Output Power Programming** - Details the relevant registers for setting the output power of the radio. 
 
-- **Section 15: Packet Handling Hardware Support** & **Section 20: Data FIFO** - These sections don't define explicit parameters about the signal, but rather how we will structure and send the signal.
+- **Section 15: Packet Handling Hardware Support** and **Section 20: Data FIFO** - These sections don't define explicit parameters about the signal, but rather how we will structure and send the signal.
 ---
 
 ### Optional Sections
@@ -655,7 +655,11 @@ There are a few other optional packet features that we will not be implementing 
 ### `TX` Radio State
 As seen earlier in the [simplified radio control diagram](https://github.com/ryan2625/CC1101-TX/blob/main/Assets/simplified_state_diagram.png), the radio has a set number of states it can exist in. Each state can only be entered through specific transitions, including the state for transmit (`TX`) mode.
 
-Every time the radio starts up, it should be [reset with the `SRES` strobe](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#cc1101-initialization-procedure) and put into IDLE mode. To transmit data, we have to go from the `IDLE` state to the `TX` state. Luckily, we can reach this mode with a single command strobe called `STX` located at address `0x35`. This command automatically performs internal actions such as radio calibration and starting the frequency synthesizer. Shown below is the `MARCSTATE` register that will contain the current state the radio is in, which is useful for debugging purposes.
+Every time the radio starts up, it should be [reset with the `SRES` strobe](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#cc1101-initialization-procedure) and put into IDLE mode. To transmit data, we have to go from the `IDLE` state to the `TX` state. Luckily, we can reach this mode with a single command strobe called `STX` located at address `0x35`.
+
+There is also an important setting we have to configure to ensure our transmissions are stable. The [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer) must be calibrated often when transmitting signals. We can enable automatic calibration when entering `TX` mode with the `MCSM0.FS_AUTOCAL` field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
+
+Shown below is the `MARCSTATE` register that will contain the current state the radio is in, which is useful for debugging purposes.
 
 <div align='center'>
 
@@ -665,7 +669,8 @@ Page 93: `MARCSTATE` Register
 
 </div>
 
->Note: Both the `STX` command strobe and the `MARCSTATE` register are located at address `0x35`. The difference is that when we communicate with the CC1101 using the SPI interface, we are changing the burst bit value to distinguish between a status register and a command strobe at the same address. Remember that an SPI transaction starts with a header byte that contains a R/W bit, a burst bit, and a 6 bit address.<br><br> Setting the burst bit to 1 changes the header byte from `0x35` to `0xF5`. Sending `0x35` activates the `STX` strobe, while sending `0xF5` returns the `MARCSTATE` register value. Refer back to the section regarding [expected transaction format](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) from my first guide. 
+>Note: Both the STX command strobe and the MARCSTATE register are located at address `0x35`. The difference is that when we communicate with the CC1101 using the SPI interface, we are changing the burst and R/W bit values to [distinguish between a status register and a command strobe](https://github.com/ryan2625/ESP32-CC1101#differentiate) at the same address. Remember that an SPI transaction starts with a header byte that contains a R/W bit, a burst bit, and a 6 bit address.<br><br> Setting the burst and R/W bit to 1 changes the header byte from `0x35` to `0xF5`. Sending `0x35` activates the STX strobe, while sending `0xF5` returns the MARCSTATE register value. Refer back to the section regarding [expected transaction format](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) from my first guide. 
+
 ---
 ### Writing to the TX FIFO
 The 64 byte TX FIFO and RX FIFO are accessed through the address `0x3F`. A R/W bit set to `0` corresponds to TX FIFO access, while a `1` corresponds to RX access.
@@ -722,7 +727,7 @@ We must put the radio in a known safe state after we encounter an error. A commo
 
 The command strobe to send for error recovery in `TX` mode is `SFTX` at address `0x3B`. This will empty (flush) the TX FIFO and put the device in the `IDLE` state. 
 
-We can see what state the radio is in from either the `MARCSTATE` register or the chip status byte found in **Section 10.1**. As seen in the image below, the chip status byte `STATE` field holds the state the radio is in, while the `FIFO_BYTES_AVAILABLE` field contains the number of bytes that can be written to the TX FIFO. This field's max value is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. 
+We can see what state the radio is in from either the `MARCSTATE` register or the chip status byte found in **Section 10.1**. As seen in the image below, the chip status byte `STATE` field holds the state the radio is in, while the `FIFO_BYTES_AVAILABLE` field contains the number of bytes that can be written to the TX FIFO (with one caveat explained in a [later section](#bytes-available)). This field's max value is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. The chip status byte is always the first byte received back from the CC1101 in an SPI transaction.
 
 To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status register at address `0x3A`. The header byte to access this is `0xFA` (`0x3A` with the read and burst bits set).
 
@@ -926,9 +931,9 @@ At this point, we have:
 - Learned the radio’s operating states and when to use command strobes
 - Created helper functions in C++ to interact with the CC1101
 
-The final step is to examine the program I've created in `main.cpp` and analyze its output. Just like we have discussed, we will see the constants defined at the top, followed by the helper functions, followed by our `app_main` function which contains SPI bus configuration and setting up & transmitting a signal.
+The final step is to examine the program in `main.cpp` and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
 
-It is encouraged to skim the program and connect the ideas we have discussed this far in the guide. When we run the program, we get the following output: 
+It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. When we run the program, we get the following output: 
 ```text
 I (297) main_task: Calling app_main()
 I (1297) MAIN: Hello World...?
@@ -961,19 +966,74 @@ I (4367) CC1101: GDO0 level: 0
 I (4367) main_task: Returned from app_main()
 ```
 
-10.1 chip status byte
-The last four bits (3:0) in the status byte
-contains FIFO_BYTES_AVAILABLE. For read
-operations (the R/W¯ bit in the header byte is
-set to 1), the FIFO_BYTES_AVAILABLE field
-contains the number of bytes available for
-reading from the RX FIFO. For write
-operations (the R/W¯ bit in the header byte is
-set to 0), the FIFO_BYTES_AVAILABLE field
-contains the number of bytes that can be
-written to the TX FIFO. When
-FIFO_BYTES_AVAILABLE=15, 15 or more
-bytes are available/free
+The first relevant log associated with an SPI transaction is:
+```
+I (1297) CC1101: Operation: GDO0 CONFIG | 0x0F 0x0F
+```
+This log appears while we are configuring the registers and before our transmission. Recall that the first byte received back in any SPI transaction for the CC1101 is the chip status byte, which is the first `0x0F` in the log above.
+
+ <a id="bytes-available"></a>
+ The interesting thing to note is that according to the data sheet, the meaning of the `FIFO_BYTES_AVAILABLE` field changes depending on if the transaction is a read or a write. For write operations, this field indicates how many bytes can be written to the TX FIFO. For read operations, this field indicates how many bytes are available to read from the RX FIFO.
+
+I wanted to log the value of at least one write operation so we can see what the `FIFO_BYTES_AVAILABLE` field would be before we interact with the TX FIFO. We can see that the `0x0F` value corresponds to a ready chip, the radio being in the `IDLE` state, and at least 15 free bytes in the TX FIFO.
+
+The bytes logged after the first in a write transaction can be ignored.
+
+<div align='center'>
+
+<img src="Assets/CHIP_STATUS_BYTE.png" width="95%">
+
+Page 31: Chip Status Byte Format
+</div>
+
+The next part of the log is reading back all of our register values that we just configured and after loading 7 bytes into the TX FIFO. I've attatched notes to some of the logs below
+```text
+I (2297) CC1101: ========== ALL CONFIG VALUES ==========
+I (2297) CC1101: Operation: READ AUTOCAL | 0x00 0x14
+I (2297) CC1101: Operation: READ FREQUENCY | 0x00 0x0C 0x1D 0x8A 
+I (2297) CC1101: Operation: READ MOD FORMAT / SYNC MODE | 0x00 0x03
+I (2307) CC1101: Operation: READ DEVIATION | 0x00 0x40 
+I (2307) CC1101: Operation: READ DATA RATE | 0x00 0x89 0xF8
+I (2317) CC1101: Operation: READ POWER | 0x00 0x51 
+I (2317) CC1101: Operation: READ SYNC WORD | 0x00 0xD3 0x91
+I (2327) CC1101: Operation: READ PREAMBLE | 0x00 0x22
+I (2327) CC1101: Operation: READ PKTCTRL0 | 0x00 0x00 
+
+// 5 byte packet length
+I (2337) CC1101: Operation: READ PKTLEN | 0x00 0x05
+
+// Set GDO0 to give alerts about TX FIFO threshold
+I (2337) CC1101: Operation: READ IOCFG0 | 0x00 0x02
+
+// TXFIFO Threshold is 5 bytes
+I (2347) CC1101: Operation: READ FIFOTHR | 0x00 0x0E 
+
+// MCSM1 is the register for TXOFF_MODE. We set this value to 01, which essentially just means
+// that the radio will send the strobe FSTXON after a transmission is complete. This is a state
+// that performs some calibration steps that allows us to enter TX mode faster the next time
+// we need to.
+I (2347) CC1101: Operation: READ MCSM1 | 0x00 0x31
+
+// MARCSTATE value tells us the radio is in IDLE mode which is to be expected
+I (2347) CC1101: Operation: READ MARCSTATE | 0x00 0x01 
+
+// We have loaded up 7 bytes into our TX FIFO at this point
+I (2357) CC1101: Operation: READ TXBYTES | 0x00 0x07
+
+// Our GDO0 pin reads high, telling us we have more than 5 bytes in our TX FIFO
+I (2357) CC1101: GDO0 level: 1
+```
+Now, we will put our radio into `TX` mode which will automatically start sending preamble bits, sync word, and then our 5 byte packet. Assuming there are no errors, `TXOFF_MODE` will put our radio into `FSTXON` state via the `FSTXON` strobe. 
+
+After our radio finishes its transmission, we see the following logged to the console:
+```text
+I (3367) CC1101: ============ AFTER 5 BYTES ============
+I (3367) CC1101: Operation: READ MARCSTATE | 0x30 0x12
+I (3367) CC1101: Operation: READ TXBYTES | 0x30 0x02 
+I (3367) CC1101: GDO0 level: 0
+```
+As expected, our `MARCSTATE` register lets us know we are in the `FSXTON` state (corresponding to `0x12`). We also see from the `TXBYTES` register that we have exactly 2 (`0x02`) bytes in our TX FIFO.
+
 ## Proving the Transmission Was Successful
 # 8. Datasheet and Theory Abstraction in Libraries
 Talk about doing this with just the ESP-IDF compared to doing it with arduino and [RadioLib](https://github.com/jgromes/RadioLib).
