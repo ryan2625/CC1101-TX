@@ -41,6 +41,8 @@ constexpr uint8_t CC1101_CONFIG_MDMCFG1   = 0x13; // NUM_PREAMBLE
 constexpr uint8_t CC1101_CONFIG_DEVIATN   = 0x15; // DEVIATION_E, DEVIATION_M
 constexpr uint8_t CC1101_CONFIG_MCSM1     = 0x17; // TXOFF_MODE
 constexpr uint8_t CC1101_CONFIG_PATABLE   = 0x3E;
+constexpr uint8_t CC1101_CONFIG_MCSM0     = 0x18; // FS_AUTOCAL
+
 // ============= STATUS REGISTERS ============ //
 constexpr uint8_t CC1101_STATUS_TXBYTES   = 0x3A;
 constexpr uint8_t CC1101_STATUS_MARCSTATE = 0x35;
@@ -63,6 +65,7 @@ constexpr uint8_t CC1101_VALUE_PKTCTRL0   = 0x00; // Packet Mode: Fixed
 constexpr uint8_t CC1101_VALUE_MCSM1      = 0x30; // TXOFF Mode: IDLE
 constexpr uint8_t CC1101_VALUE_IOCFG0     = 0x02; // GDO0 Config: FIFO Threshold Alert
 constexpr uint8_t CC1101_VALUE_PATABLE    = 0x51; // Output Power: 0 dBm
+constexpr uint8_t CC1101_VALUE_MCSM0      = 0x14; // FS_AUTOCAL: Calibrate when IDLE -> TX
 constexpr uint8_t CC1101_DUMMY_BYTE       = 0x00; 
 // =========================================== //
 
@@ -105,21 +108,21 @@ void initialize_device(spi_device_handle_t cc1101) {
         (uint8_t[]){CC1101_STROBE_SRES},
         1,
         "SRES"
-        );
+    );
     // Put CC1101 in idle mode
     spi_transaction(
         cc1101,
         (uint8_t[]){CC1101_STROBE_SIDLE},
         1,
         "SIDLE"
-        );
+    );
     // Flush transmit buffer: in order to send the SFTX strobe, CC1101 must be in certain states (like idle mode)
     spi_transaction(
         cc1101,
         (uint8_t[]){CC1101_STROBE_SFTX},
         1,
         "SFTX"
-        );
+    );
 };
 // To write c++ in the ESP-IDF, we have to include extern "C"
 extern "C" void app_main(void)
@@ -151,7 +154,16 @@ extern "C" void app_main(void)
     // =================== END CONFIGURE DEVICE SECTION ===================== //
 
     // =================== CONFIGURE PARAMETERS SECTION ===================== //
-    initialize_device(cc1101);
+    initialize_device(cc1101); 
+    spi_transaction(
+        cc1101,
+        (uint8_t[]){
+            calculate_header_byte(CC1101_CONFIG_MCSM0, false, false),
+            CC1101_CONFIG_MCSM0
+        },
+        2,
+        "AUTOCAL"
+    );
     // FREQUENCY
     spi_transaction(
         cc1101,
@@ -218,7 +230,6 @@ extern "C" void app_main(void)
         3,
         "SYNC WORD"
     );
-
     // PREAMBLE LENGTH
     spi_transaction(
         cc1101,
@@ -229,7 +240,6 @@ extern "C" void app_main(void)
         2,
         "PREAMBLE"
     );
-
     // SYNC MODE ( & MOD FORMAT)
     spi_transaction(
         cc1101,
@@ -240,7 +250,6 @@ extern "C" void app_main(void)
         2,
         "SYNC MODE"
     );
-
     // PACKET LENGTH MODE
     spi_transaction(
         cc1101,
@@ -251,7 +260,6 @@ extern "C" void app_main(void)
         2,
         "PKTCTRL0"
     );
-
     // FIXED PACKET LENGTH
     spi_transaction(
         cc1101,
@@ -262,7 +270,6 @@ extern "C" void app_main(void)
         2,
         "PKTLEN"
     );
-
     // TXOFF MODE
     spi_transaction(
         cc1101,
@@ -273,7 +280,6 @@ extern "C" void app_main(void)
         2,
         "TXOFF MODE"
     );
-
     // WRITE TO TX FIFO
         spi_transaction(
         cc1101,
@@ -293,7 +299,6 @@ extern "C" void app_main(void)
         10,
         "TX FIFO"
     );
-
     // GDO0 CONFIG
     spi_transaction(
         cc1101,
@@ -304,7 +309,6 @@ extern "C" void app_main(void)
         2,
         "GDO0 CONFIG"
     );
-
     // FIFO THR
     spi_transaction(
         cc1101,
@@ -315,7 +319,6 @@ extern "C" void app_main(void)
         2,
         "FIFO THR"
     );
-
     // ENTER TX MODE
     spi_transaction(
         cc1101,
@@ -325,7 +328,6 @@ extern "C" void app_main(void)
         1,
         "TX MODE"
     );
-
     // ==================== END CONFIGURE FIFO SECTION ====================== //
     log_reg_values(cc1101); // Logs all values we just entered for debugging purposes
 }
