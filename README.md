@@ -443,7 +443,7 @@ More coding examples will be shown in the [Sending Data in C++](#7-sending-data-
 ...
 extern "C" void app_main(void) {
     ...
-    // The order that the registers will be written to is 
+    // The order that the registers will be written to is:
     // FREQ2 -> FREQ1 -> FREQ0
     // 0x0C goes to FREQ2, 0x1D to FREQ1, and 0x8A to FREQ0
 
