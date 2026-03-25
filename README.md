@@ -287,11 +287,11 @@ With this mental map, let's analyze the datasheet and find the relevant sections
 
 ### General Configuration Sections
 Whenever we are writing firmware for an embedded device, we need to know how to communicate with the system and if there are any peculiar setup details.
-[My first writeup](https://github.com/ryan2625/ESP32-CC1101/tree/main?tab=readme-ov-file#esp32-cc1101) for the CC1101 described which sections are important for general configuration in detail, but we will briefly revisit them below.
+[My first writeup](https://github.com/ryan2625/ESP32-CC1101/tree/main?tab=readme-ov-file#esp32-cc1101) for the CC1101 described some of the sections about general configuration already, but we will briefly revisit them below.
 
 - **Section 10: 4-Wire Serial Configuration and Data Interface** - This section tells us the protocol to use when communicating with the chip ([SPI](https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html)) and how to access registers in the CC1101. This is one of the first and most important sections to understand when writing firmware for this chip, as everything after this point builds off of this section.
 
-- **Section 29: Configuration Registers** - Here we will find the addresses of all the registers in the radio. These include status registers such as `PARTNUM` and configuration registers, where we send the values for our radio parameters such as frequency and modulation format. Each section in the datasheet lists its relevant registers, so **Section 29** will be referenced frequently.
+- **Section 29: Configuration Registers** - Here we will find the addresses for all of the registers in the radio. These include status registers and configuration registers, where we send the values for our radio parameters such as frequency and modulation format. Each section in the datasheet lists its relevant registers, so **Section 29** will be referenced frequently.
 
 - **Section 19: Radio Control** - Describes important setup details and how the radio operates internally through state transitions. **Section 19.0** shows us the state control diagram, while **Section 19.1** tells us the exact sequence the device expects when it powers on.
 
@@ -304,7 +304,7 @@ Page 28: Simplified Radio Control Diagram
 </div>
 
 > [!NOTE]
-> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in.<br><br>For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The full state control diagram can be found on page 50.
+> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in.<br><br>For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The full state control diagram can be found on page 50 of the datasheet.
 
 ---
 
@@ -330,7 +330,7 @@ Every radio transmission has specific parameters that must be configured, regard
 
 - **Section 24: Output Power Programming** - Details the relevant registers for setting the output power of the radio. 
 
-- **Section 15: Packet Handling Hardware Support** and **Section 20: Data FIFO** - These sections don't define explicit parameters about the signal, but rather how we will structure and send the signal.
+- **Section 15: Packet Handling Hardware Support** and **Section 20: Data FIFO** - These sections don't define explicit parameters about the signal, but rather how we will structure and send data with the signal.
 ---
 
 ### Optional Sections
@@ -442,10 +442,10 @@ We must do the following to set the frequency:
     - Set bit position 6 to `1` to denote burst access. This will let us write to all three frequency registers in one transaction.
     - Set bit positions 5–0 to `001101` for the FREQ2 register address. Since the address field is 6 bits wide, the original value of `1101` (`0x0D`) is padded with leading zeros.
     - The entire header byte is `01001101`, or `0x4D`.
-- Convert `793,994` to hex which is `0x0C1D8A`, and split this into three bytes.
+- Convert `793,994` to hex which is `0x0C1D8A`, and split this into three bytes; one for each register.
 - Send the header byte, followed by the three bytes representing the FREQ value.
 
->Note: When setting the burst bit to `1` in write mode, data is written sequentially to consecutive registers with increasing address values; we only need to specify the address of the first register for burst access. Refer to the register addresses listed below. <div align="center"><img src="Assets/Frequency_Reg.png" width="100%"></div> 
+>Note: When setting the burst bit to `1` in write mode, data is written sequentially to consecutive registers with increasing address values. This means we only need to specify the address of the first register for burst access. Refer to the register addresses listed below. The [entire address list](#other-media) is visualized later in the guide. <div align="center"><img src="Assets/Frequency_Reg.png" width="100%"></div> 
 
 <br>
 
@@ -483,7 +483,7 @@ Page 77: Modulation Format Value Mappings in the `MDMCFG2.MOD_FORMAT` Field at `
 </div>
 
 ## Scientific Notation
-2-FSK works by shifting the frequency by an amount called the 'deviation.' The larger the deviation is, the easier it is for a radio to interpret incoming signals. To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. 
+2-FSK works by shifting the frequency by an amount called the 'deviation.' To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. 
 
 The mantissa allows fine adjustment of the deviation, while the exponent scales the deviation exponentially. These concepts are also used in [Scientific Notation](https://en.wikipedia.org/wiki/Scientific_notation). The mantissa and exponent values are configured in the `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` fields respectively at address `0x15`. 
 
@@ -613,12 +613,14 @@ Below is a table showing what power output corresponds to what setting value. Th
 >Note: There are tables for multi-layer inductors and wire-wound inductors in section 24. The power output doesn't have to be a specific value for this project's goal, but just be aware that the power settings can change depending on what type of CC1101 module you have.
 
 ## Setting the Output Power
-The `PATABLE` register is located at address `0x3E`. Since we are just setting a single power output, we will just be sending one byte to this address. Based on table 39, `0x51` provides a reasonable midrange transmit power for the 315 MHz band. **Section 10.6** provides more information on how to access the `PATABLE` register.
+The `PATABLE` register is located at address `0x3E`. Since we are only setting a single power output, we will just be sending one byte to this address. Based on table 39, `0x51` provides a reasonable midrange transmit power for the 315 MHz band; we will send this value to the register. **Section 10.6** provides more information on how to access the `PATABLE` register.
 
 # 6. Transmitting Packets
 
 ## Packet Structure
-This guide uses the CC1101 packet handler (TX FIFO packet mode), not synchronous/asynchronous serial direct modes. For this mode, the packet structure in the CC1101 follows a particular pattern that is outlined in **Section 15**. In the figure below, we can see designated bits for things such as Preamble bits, the Sync Word, and the data field. This section of the guide will explain the anatomy of a packet and how to configure its different parts.
+This guide uses the CC1101 packet handler (TX FIFO packet mode), not synchronous/asynchronous serial direct modes. For this mode, the packet structure in the CC1101 follows a particular pattern that is outlined in **Section 15** of the datasheet. 
+
+In the figure below, we can see designated bits for things such as Preamble bits, the Sync Word, and the data field. This section of the guide will explain the anatomy of a packet and how to configure its different parts.
 
 <div align='center'>
 
@@ -632,6 +634,15 @@ Preamble bits (or bytes) are a sequence of alternating bits sent at the start of
 The second purpose is that they assist in synchronizing the transmission timing between the receiver and the transmitter to ensure data is processed correctly. The overall purpose of the preamble bits is to help tune the receiver before meaningful data is sent.
 
 In the CC1101, the amount of preamble bytes sent is configured in the `MDMCFG1.NUM_PREAMBLE` field at `0x13`. The datasheet recommends using a 4-byte preamble (32 bits). When the radio enters `TX` mode, it will keep transmitting the preamble bytes you configured infinitely until a byte is written to the TX FIFO. 
+
+<div align='center'>
+
+<img src="Assets/MDMCFG1.png" width="92%">
+
+Page 77: `MDMCFG1` Register
+
+</div>
+
 
 ### Synchronization Word
 The Synchronization word's primary purpose is to mark the exact start of valid data in a signal. It can also help with network filtering, where a receiver can check the sync word of a signal and ignore signals that do not match the expected sync word. More information on the sync word can be found in section **14.3: Byte Synchronization**. The sync word value itself is arbitrary, but the receiver and the transmitter must match each other if it is used.
@@ -1058,5 +1069,14 @@ I (4367) CC1101: GDO0 level: 0
 Since we only have 2 bytes in our TX FIFO, this means the radio will enter the `TXFIFO_UNDERFLOW` state. We can confirm this since the chip status byte value is `0x70` and the `TXBYTES` register value is `0x80`.
 
 ## Proving the Transmission Was Successful
+
 # 8. Datasheet and Theory Abstraction in Libraries
 Talk about doing this with just the ESP-IDF compared to doing it with arduino and [RadioLib](https://github.com/jgromes/RadioLib).
+
+### Other Media
+
+<div align="center">
+<img src="Assets/Whole_SPI_space.png" width="90%">
+
+Table 45: Entire SPI Address Space
+</div>
