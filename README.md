@@ -990,8 +990,8 @@ I (4367) CC1101: Operation: READ TXBYTES | 0x70 0x80
 I (4367) CC1101: GDO0 level: 0
 I (4367) main_task: Returned from app_main()
 ```
-The first part of the log is printed after loading 7 bytes into the TX FIFO and configuring all of our registers. As the comment states, the log here is reading back all of our configuration values. I've attached comments to some of the logs below...
-```text
+The first part of the log is printed after loading 7 bytes into the TX FIFO and configuring all of our registers. As the comment states, these are all of our configuration values. I've attached comments to some of the logs below...
+```shell
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
 I (2297) CC1101: Operation: READ AUTOCAL | 0x00 0x14
 I (2297) CC1101: Operation: READ FREQUENCY | 0x00 0x0C 0x1D 0x8A 
@@ -1035,7 +1035,7 @@ All of the values logged above correspond to the values we came up with in the p
 Now, we will put our radio into `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet.
 
 After our radio finishes its transmission, we see the following logged to the console:
-```text
+```bash
 I (3367) CC1101: ============ AFTER 5 BYTES ============
 I (3367) CC1101: Operation: READ MARCSTATE | 0x30 0x12
 I (3367) CC1101: Operation: READ TXBYTES | 0x30 0x02 
