@@ -304,7 +304,7 @@ Page 28: Simplified Radio Control Diagram
 </div>
 
 > [!NOTE]
-> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in.<br><br>For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The full state control diagram can be found on page 50 of the datasheet.
+> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in.<br><br>For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The [full state control diagram](#entire_radio) can be found on page 50 of the datasheet. 
 
 ---
 
@@ -445,7 +445,7 @@ We must do the following to set the frequency:
 - Convert `793,994` to hex which is `0x0C1D8A`, and split this into three bytes; one for each register.
 - Send the header byte, followed by the three bytes representing the FREQ value.
 
->Note: When setting the burst bit to `1` in write mode, data is written sequentially to consecutive registers with increasing address values. This means we only need to specify the address of the first register for burst access. Refer to the register addresses listed below. The [entire address list](#other-media) is visualized later in the guide. <div align="center"><img src="Assets/Frequency_Reg.png" width="100%"></div> 
+>Note: When setting the burst bit to `1` in write mode, data is written sequentially to consecutive registers with increasing address values. This means we only need to specify the address of the first register for burst access. Refer to the register addresses listed below. The [entire address list](#spi_space) is visualized later in the guide. <div align="center"><img src="Assets/Frequency_Reg.png" width="100%"></div> 
 
 <br>
 
@@ -633,7 +633,7 @@ Preamble bits (or bytes) are a sequence of alternating bits sent at the start of
 
 The second purpose is that they assist in synchronizing the transmission timing between the receiver and the transmitter to ensure data is processed correctly. The overall purpose of the preamble bits is to help tune the receiver before meaningful data is sent.
 
-In the CC1101, the amount of preamble bytes sent is configured in the `MDMCFG1.NUM_PREAMBLE` field at `0x13`. The datasheet recommends using a 4-byte preamble (32 bits). When the radio enters `TX` mode, it will keep transmitting the preamble bytes you configured infinitely until a byte is written to the TX FIFO. 
+In the CC1101, the amount of preamble bytes sent is configured in the `MDMCFG1.NUM_PREAMBLE` field at `0x13`. The datasheet recommends using a 4-byte preamble (32 bits) which corresponds to setting 2 of the field. When the radio enters `TX` mode, it will keep transmitting the preamble bytes you configured infinitely until a byte is written to the TX FIFO. 
 
 <div align='center'>
 
@@ -645,7 +645,9 @@ Page 77: `MDMCFG1` Register
 
 
 ### Synchronization Word
-The Synchronization word's primary purpose is to mark the exact start of valid data in a signal. It can also help with network filtering, where a receiver can check the sync word of a signal and ignore signals that do not match the expected sync word. More information on the sync word can be found in section **14.3: Byte Synchronization**. The sync word value itself is arbitrary, but the receiver and the transmitter must match each other if it is used.
+The Synchronization word's primary purpose is to mark the exact start of valid data in a signal. It can also help with network filtering, where a receiver can check the sync word of a signal and ignore signals that do not match the expected sync word. 
+
+More information on the sync word can be found in section **14.3: Byte Synchronization**. The sync word value itself is arbitrary, but the receiver and the transmitter must match each other if it is used.
 
 The CC1101 recommends implementing a 4-byte sync word, stored in the `SYNC1` at `0x04` and `SYNC0` at `0x05` registers. To reach the recommended 4 bytes in a sync word, we will have to send the `MDMCFG2.SYNC_MODE` field either a 3 (`011`) or a 7 (`111`). This will duplicate the 2 bytes we have stored in `SYNC1` and `SYNC0` and send 4 bytes in total when we transmit data. 
 
@@ -657,7 +659,7 @@ Page 77: `MDMCFG2.SYNC_MODE` Field
 
 </div>
 
->Note: If you have a sync word, you must always include preamble bits and vice versa. Both of these will be automatically inserted at the start of a transmission in setting 3 and 7; we will not have to manually send them.
+>Note: If you have a sync word, you must always include preamble bits and vice versa. Both of these will be automatically inserted at the start of a transmission in setting 3 or 7; we will not have to manually send them after configuration.
 
 ### Packet Length
 The CC1101 expects a packet length mode to be configured in the `PKTCTRL0.LENGTH_CONFIG` field at `0x08`. There are three different modes for packet length...
@@ -665,7 +667,7 @@ The CC1101 expects a packet length mode to be configured in the `PKTCTRL0.LENGTH
 2. Variable packet length mode: the length of the packet is set by the first byte written to the TX FIFO instead of the `PKTLEN` register. Sequentially, this byte appears after the sync word.
 3. Infinite packet length mode: there is no set length of the packet, and the CC1101 will continually transmit data it is given. 
 
->Note: The maximum packet length for fixed and variable packet length modes is 255 bytes. Use infinite packet length mode for payloads longer than 255. When working with packets longer than 64 bytes, consider *Section 15.6: Packet Handling in Firmware*.
+>Note: The maximum packet length for fixed and variable packet length modes is 255 bytes. Use infinite packet length mode for payloads longer than 255. When working with packets longer than 64 bytes, consider **Section 15.6: Packet Handling in Firmware**.
 
 <div align='center'>
 
@@ -678,9 +680,9 @@ Page 78: `PKTCTRL0.LENGTH_CONFIG` Field
 ### Other Packet Features
 There are a few other optional packet features that we will not be implementing in this guide. These include:
 - Data Whitening, which alters the bit pattern of transmitted data to help receivers decode it more effectively.
-- Forward Error Correction and Interleaving, which helps increase the robustness of receivers handling errors.
+- Forward Error Correction and Interleaving, which helps receivers handle errors and makes the signal more robust.
 - CRC ([Cyclic Redundancy Check](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)) Checksum, an error detection method that will let the receiver know if the packet is corrupted.
-- The Address Byte, which is a byte dedicated towards address filtering. This enables receivers to ignore irrelevant traffic and only look at signals with a specific address byte.
+- The Address Byte, which is a byte dedicated towards address filtering. Similar to the sync word, this enables receivers to ignore irrelevant traffic and only look at signals with a specific address byte.
 
 
 ## Transmission Mechanics and Data FIFO 
@@ -690,7 +692,7 @@ As seen earlier in the [simplified radio control diagram](https://github.com/rya
 
 Every time the radio starts up, it should be [reset with the `SRES` strobe](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#cc1101-initialization-procedure) and put into IDLE mode. To transmit data, we have to go from the `IDLE` state to the `TX` state. Luckily, we can reach this mode with a single command strobe called `STX` located at address `0x35`.
 
-There is also an important setting we have to configure to ensure our transmissions are stable. The [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer) must be calibrated often when transmitting signals. We can enable automatic calibration when entering `TX` mode with the `MCSM0.FS_AUTOCAL` field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
+There is one more aspect of the radio state that should be considered before transmitting a signal: calibrating the [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer). We can enable automatic calibration when entering `TX` mode with the `MCSM0.FS_AUTOCAL` field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
 
 Shown below is the `MARCSTATE` register that will contain the current state the radio is in, which is useful for debugging purposes.
 
@@ -706,9 +708,12 @@ Page 93: `MARCSTATE` Register
 
 ---
 ### Writing to the TX FIFO
-The 64 byte TX FIFO and RX FIFO are accessed through the address `0x3F`. A R/W bit set to `0` corresponds to TX FIFO access, while a `1` corresponds to RX access.
+The CC1101 uses what is known as a 'Data FIFO' to transmit and receive packets. This data FIFO is called the TX FIFO when transmitting data and called the RX FIFO when receiving data. 
 
-Here are the possible FIFO access [header bytes](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) from **Section 10.5** and their respective functionalities:
+The TX/RX FIFOs are accessed through the address `0x3F`. This area does not refer to a register, but rather to a [data buffer](https://en.wikipedia.org/wiki/Data_buffer). The TX FIFO is implemented as a 64 byte queue that sends data in the exact order it is fed. As data is transmitted, it leaves the buffer.
+
+Below are the possible FIFO access [header bytes](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) from **Section 10.5** and their respective functionalities. A R/W bit set to `0` corresponds to TX FIFO access, while a `1` corresponds to RX FIFO access.
+
 - 0x3F: Single byte access to TX FIFO
 - 0x7F: Burst access to TX FIFO
 - 0xBF: Single byte access to RX FIFO
@@ -717,9 +722,6 @@ Here are the possible FIFO access [header bytes](https://github.com/ryan2625/ESP
 For example, after sending the byte `0x7F`, every subsequent byte sent in the same SPI transaction will be written into the TX FIFO.
 
 ### Transmission Flow
-
-The CC1101 uses what is known as a 'Data FIFO' to transmit and receive packets. This data FIFO is called the TX FIFO when referring to transmitting data. The TX FIFO is implemented as a 64 byte queue buffer that sends data in the exact order it is fed. As data is transmitted, it leaves the buffer. 
-
 Assuming there is data in the TX FIFO and preamble/sync word insertion is enabled in `MDMCFG2.SYNC_MODE`, let's look at the order of how CC1101 transmits data once it enters `TX` mode. Ignoring the optional packet features, the radio does the following:
 1. Automatically sends the programmed number of preamble bytes specified in the `MDMCFG1.NUM_PREAMBLE` field
 2. Attaches the sync word to the payload from `SYNC1` and `SYNC0`
@@ -1074,9 +1076,18 @@ Since we only have 2 bytes in our TX FIFO, this means the radio will enter the `
 Talk about doing this with just the ESP-IDF compared to doing it with arduino and [RadioLib](https://github.com/jgromes/RadioLib).
 
 ### Other Media
-
+<a id='spi_space'></a>
 <div align="center">
-<img src="Assets/Whole_SPI_space.png" width="90%">
+<img src="Assets/Whole_SPI_space.png" width="95%">
 
 Table 45: Entire SPI Address Space
+</div>
+
+---
+<br>
+<a id='entire_radio'></a>
+<div align="center">
+<img src="Assets/entire_radio_state.png" width="95%">
+
+Figure 25: Complete Radio Control State Diagram
 </div>
