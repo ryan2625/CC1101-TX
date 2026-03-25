@@ -1215,7 +1215,7 @@ Into just this:
 ```
 A few of the values we explicitly set in our original program were redundant, as the CC1101 has certain defaults that were already aligned with our guide's goals. Even without that, our original code is still far larger than the relatively equivalent Arduino code.
 
-This is the classic abstraction paradigm of the ease and speed of development with libraries vs the customization and performance without one. Most hobbyist projects will benefit from using a library, unless a deeper understanding of the hardware is sought out.
+This is the classic abstraction paradigm of the ease and speed of development with libraries vs the customization and performance without them. Most hobbyist projects will benefit from using a library, unless a deeper understanding of the hardware is sought out.
 ### Other Media
 <a id='spi_space'></a>
 <div align="center">
