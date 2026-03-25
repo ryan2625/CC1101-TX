@@ -960,7 +960,7 @@ At this point, we have:
 The final step is to examine the program in `main.cpp` and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
 
 It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. When we run the program, we get the following output: 
-```text
+```bash
 I (297) main_task: Calling app_main()
 I (1297) MAIN: Hello World...?
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
@@ -1035,7 +1035,7 @@ All of the values logged above correspond to the values we came up with in the p
 Now, we will put our radio into `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet.
 
 After our radio finishes its transmission, we see the following logged to the console:
-```bash
+```INI
 I (3367) CC1101: ============ AFTER 5 BYTES ============
 I (3367) CC1101: Operation: READ MARCSTATE | 0x30 0x12
 I (3367) CC1101: Operation: READ TXBYTES | 0x30 0x02 
@@ -1048,7 +1048,7 @@ Since we only have 2 bytes left and our TX FIFO threshold is 5, Our `GDO0` pin i
 ---
 
 The last thing we do is put our radio back into `TX` mode which will send another 5 packets. 
-```text
+```log
 I (4367) CC1101: ============ AFTER 10 BYTES ===========
 I (4367) CC1101: Operation: READ MARCSTATE | 0x70 0x16
 I (4367) CC1101: Operation: READ TXBYTES | 0x70 0x80 
