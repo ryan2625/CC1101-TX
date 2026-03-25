@@ -708,9 +708,9 @@ Page 93: `MARCSTATE` Register
 
 ---
 ### Writing to the TX FIFO
-The CC1101 uses what is known as a 'Data FIFO' to transmit and receive packets. This data FIFO is called the TX FIFO when transmitting data and called the RX FIFO when receiving data. 
+The CC1101 contains two data FIFOs, one for transmitting data (the TX FIFO) and one for receiving data (the RX FIFO).
 
-The TX/RX FIFOs are accessed through the address `0x3F`. This area does not refer to a register, but rather to a [data buffer](https://en.wikipedia.org/wiki/Data_buffer). The TX FIFO is implemented as a 64 byte queue that sends data in the exact order it is fed. As data is transmitted, it leaves the buffer.
+The TX/RX FIFOs are accessed through the address `0x3F`. This area does not refer to a register, but rather to a [data buffer](https://en.wikipedia.org/wiki/Data_buffer). The TX FIFO is implemented as a 64 byte queue that sends data in the exact order it is fed; as data is transmitted, it leaves the buffer.
 
 Below are the possible FIFO access [header bytes](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) from **Section 10.5** and their respective functionalities. A R/W bit set to `0` corresponds to TX FIFO access, while a `1` corresponds to RX FIFO access.
 
@@ -731,12 +731,12 @@ During this flow, the radio can enter any of the scenarios outlined in the next 
 > Note: **Section 15.4** of the datasheet outlines the transmission flow.
 
 ### TX Mode Scenarios
-There are three scenarios that relate to `TX` mode that can occur either when writing to the TX FIFO or when a transmission finishes. These three scenarios are: 
-1. The radio moves into the next state determined by the `MCSM1.TXOFF_MODE` field at address `0x17`
-3. The `TXFIFO_UNDERFLOW` state
-2. TX FIFO Overflow
+There are three different scenarios in `TX` mode that can occur either when writing to the TX FIFO or when a transmission finishes. These three scenarios are: 
+1. The radio moves into the next state determined by the `MCSM1.TXOFF_MODE` field
+2. The radio enters the `TXFIFO_UNDERFLOW` state
+3. TX FIFO Overflow occurs
 
-The first scenario is activated when a transmission is completed without any errors. In this case, the `MCSM1.TXOFF_MODE` field will automatically put the radio in the configured state. As we can see in the image below, there are four total different states that can be configured.
+The first scenario is activated when a transmission is completed without any errors. In this case, the `MCSM1.TXOFF_MODE` field at address `0x17` will automatically put the radio in one of four states.
 <div align='center'>
 
 <img src="Assets/TXOFF_MODE_reg.png" width="90%">
@@ -747,13 +747,13 @@ Page 81: `MCSM1.TXOFF_MODE` Field
 <br>
 
 The second scenario is `TXFIFO_UNDERFLOW`. This state occurs when the TX FIFO becomes empty in the middle of transmitting a packet. This error primarily happens when we specify a packet length, but the TX FIFO has less bytes than the number we configured. 
-> For example, if we are in static packet length mode and send the `PKTLEN` register the value `0x0A`, this will make our expected packet length 10 bytes. If we only fill our TX FIFO with 5 bytes, we will run out of data to send when in `TX` mode. Consequently, the radio enters the `TXFIFO_UNDERFLOW` state when we are transmitting and run out of data to send.
+> For example, if we are in static packet length mode and send the `PKTLEN` register the value `0x0A`, this will make our expected packet length 10 bytes. If we only fill our TX FIFO with 5 bytes and enter 'TX' mode, we will run out of bytes to send. In this scenario, the radio will enter the error state `TXFIFO_UNDERFLOW`.
 
 
 The third scenario, TX FIFO Overflow, occurs when we fill the TX FIFO with more than 64 bytes of data. In this scenario, there isn't a specific state the radio enters like there is for underflow. Instead, the data in the FIFO might become corrupted and the radio may behave unpredictably. 
 
 > [!IMPORTANT]
-> If we complete a transmission and there are leftover bytes in the TX FIFO, this means we might have set a packet length that is less than the bytes we stored in the TX FIFO. This is not considered TX FIFO Overflow. Those bytes just remain there until they are emptied or sent in the next transmission.
+> If we set a packet length that is less than the bytes we stored in the TX FIFO, we may complete a transmission and have leftover bytes sitting in the TX FIFO. This is not considered TX FIFO Overflow. Those bytes just remain there until they are emptied or sent in the next transmission.
 
 ---
 
@@ -762,12 +762,9 @@ We must put the radio in a known safe state after we encounter an error. A commo
 
 The command strobe to send for error recovery in `TX` mode is `SFTX` at address `0x3B`. This will empty (flush) the TX FIFO and put the device in the `IDLE` state. 
 
-We can see what state the radio is in from either the `MARCSTATE` register or the chip status byte found in **Section 10.1**. As seen in the image below, the chip status byte `STATE` field holds the state the radio is in, while the `FIFO_BYTES_AVAILABLE` field contains the number of bytes that can be written to the TX FIFO. The meaning of this field changes if we are reading a register instead of writing to one.
+We can see what state the radio is in from either the `MARCSTATE` register or the chip status byte explained in **Section 10.1**. As seen in the image below, the chip status byte `STATE` field holds the state the radio is in, while the `FIFO_BYTES_AVAILABLE` field contains the number of bytes that can be written to the TX FIFO.
 
-This field's max value is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. The chip status byte is always the first byte received back from the CC1101 in an SPI transaction.
-
-To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status register at address `0x3A`. The header byte to access this is `0xFA` (`0x3A` with the read and burst bits set).
-
+The meaning of this field changes if we are reading a register instead of writing to one.
 <div align='center'>
 
 <img src="Assets/CHIP_STATUS_BYTE.png" width="95%">
@@ -775,8 +772,11 @@ To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status regi
 Page 31: Chip Status Byte Format
 </div>
 
+The maximum value of `FIFO_BYTES_AVAILABLE` is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status register at address `0x3A`. The header byte to access this is `0xFA` (`0x3A` with the read and burst bits set).
+
+>Note: Recall that the  chip status byte is always the first byte received back from the CC1101 in an SPI transaction.
 ## TX FIFO Threshold
-As stated earlier, the TX FIFO is a 64 byte buffer that holds the data you will transmit. Causing overflow or underflow in this buffer can cause error states and lead to unpredictable radio behavior. In addition to the chip status byte, there is another mechanism to assist us with managing the TX FIFO called the FIFO threshold.
+As stated earlier, the TX FIFO is a 64 byte buffer that holds the data you will transmit. Causing overflow or underflow in this buffer can cause error states and lead to unpredictable radio behavior. In addition to the chip status byte, there is another optional mechanism to assist us with managing the TX FIFO called the FIFO threshold.
 
 In `TX` mode, the FIFO threshold is essentially a way to warn us when the number of bytes in the TX FIFO crosses a certain level. We can set the threshold by sending a value to the `FIFOTHR.FIFO_THR` register field at `0x03`. Keep in mind this threshold is simply a warning, and does not prevent underflow on its own.
 
@@ -821,7 +821,7 @@ Page 62: The First 8 Configurations in the `GDO_CFG` Field
 
 <br>
 
-The `GDO0` pin exists in a binary state of either being pulled low or high (we will read it as a `1` or a `0`). It doesn't stream data like the [`MOSI`/`MISO` pins](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#3-initialize-an-spi-bus). All it can do is act as a signal that answers yes or no to questions such as:
+The `GDO0` pin exists in a binary state of either being pulled high or low (we will read it as a `1` or a `0`). It doesn't stream data like the [`MOSI`/`MISO` pins](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#3-initialize-an-spi-bus). All it can do is act as a signal that answers yes or no to questions such as:
 - Have we passed our TX FIFO threshold?
 - Is the crystal oscillator stable?
 - Has the TX FIFO underflowed?
@@ -875,7 +875,7 @@ extern "C" void app_main(void) {
 
 # 7. Sending Data in C++
 ## Configuring the SPI Bus
-To transmit a signal, the first thing our program must do is configure the SPI bus. Configuring the SPI bus takes two separate methods [`spi_bus_initialize()`](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#method-spi_bus_initialize) and [`spi_bus_add_device()`](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#method-spi_bus_add_device) from the ESP-IDF API documentation. These methods were reviewed in depth in my first guide, so please refer back to those explanations if you want to know more. 
+To transmit a signal, the first thing our program must do is configure the SPI bus. Configuring the SPI bus takes the two methods [`spi_bus_initialize`](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#method-spi_bus_initialize) and [`spi_bus_add_device`](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#method-spi_bus_add_device) from the ESP-IDF API documentation. These methods were reviewed in depth in my first guide, so please refer back to those explanations if you want to know more. 
 ## Helper functions
 
 ### `spi_transaction`
@@ -955,13 +955,15 @@ Configuring the registers is a very repetitive task. See the section [Setting th
 constexpr uint8_t CC1101_CONFIG_FREQ2 = 0x0D;
 ```
 
-These constants are used to construct the final header byte with the `calculate_header_byte` function based on the burst and R/W bits. For registers that are accessed in burst mode, we only send the first register's address in the transaction. Burst mode automatically increments the register address during the transaction, so we don't need to explicitly define the subsequent registers. The following registers are used but not explicitly defined as constants:
+These constants are used to construct the final header byte with the `calculate_header_byte` function based on the burst and R/W bits. 
+
+For registers that are accessed in burst mode, we only send the first register's address in the transaction. Burst mode automatically increments the register address during the transaction, so we don't need to explicitly define the subsequent registers. The following registers are used but not explicitly defined as constants:
 - `FREQ1` and `FREQ0`, which come after `FREQ2`
 - `SYNC0`, which comes after `SYNC1`
 
 That is why you won't find a register specificed like `CC1101_CONFIG_SYNC0` in the code (as it is accessed automatically through burst mode), but you will find `CC1101_VALUE_SYNC0` because we still need to know what values to send to these addresses. 
 
-Every single constant for register values defined in `main.cpp` has a comment explaining what their respective value means.
+>Note: Every single constant for register values defined in `main.cpp` has a comment explaining what their respective value means.
 
 ## Running the Program
 At this point, we have:
@@ -970,7 +972,7 @@ At this point, we have:
 - Learned the radio’s operating states and when to use command strobes
 - Created helper functions in C++ to interact with the CC1101
 
-The final step is to examine the program in `main.cpp` and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
+The final step is to examine the program in [`main.cpp`](https://github.com/ryan2625/CC1101-TX/blob/main/src/main.cpp) and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
 
 It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. When we run the program, we get the following output: 
 ```text
@@ -1003,7 +1005,8 @@ I (4367) CC1101: Operation: READ TXBYTES | 0x70 0x80
 I (4367) CC1101: GDO0 level: 0
 I (4367) main_task: Returned from app_main()
 ```
-The first part of the log is printed after loading 7 bytes into the TX FIFO and configuring all of our registers. As the comment states, these are all of our configuration values. I've attached comments to some of the logs below...
+---
+The first part of the log is printed after loading 7 bytes into the TX FIFO and configuring all of our registers. As the comment states, these are all of our configuration values. I've attached comments to some of the logs below regarding their value or function...
 ```text
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
 I (2297) CC1101: Operation: READ AUTOCAL | 0x00 0x14
@@ -1022,16 +1025,16 @@ I (2337) CC1101: Operation: READ PKTLEN | 0x00 0x05
 // Set GDO0 to give alerts about TX FIFO threshold
 I (2337) CC1101: Operation: READ IOCFG0 | 0x00 0x02
 
-// TXFIFO Threshold is 5 bytes
+// Our TXFIFO Threshold is 5 bytes
 I (2347) CC1101: Operation: READ FIFOTHR | 0x00 0x0E 
 
-// MCSM1 is the register for TXOFF_MODE. We set this value to 01, which essentially just means
+// MCSM1 is the register for TXOFF_MODE. We set this field to 01, which essentially just means
 // that the radio will send the strobe FSTXON after a transmission is complete. This is a state
 // that performs some calibration steps that allows us to enter TX mode faster the next time
 // we need to.
 I (2347) CC1101: Operation: READ MCSM1 | 0x00 0x31
 
-// MARCSTATE value tells us the radio is in IDLE mode which is to be expected
+// This MARCSTATE value tells us the radio is in IDLE mode which is to be expected
 I (2347) CC1101: Operation: READ MARCSTATE | 0x00 0x01 
 
 // We have loaded up 7 bytes into our TX FIFO at this point
@@ -1045,7 +1048,7 @@ All of the values logged above correspond to the values we came up with in the p
 
 ---
 
-Now, we will put our radio into `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet.
+Now, we will put our radio into `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet. Upon a successful transmission completion, we should see the `TXOFF_MODE` putting our radio into the `FSTXON` state.
 
 After our radio finishes its transmission, we see the following logged to the console:
 ```text
@@ -1054,7 +1057,7 @@ I (3367) CC1101: Operation: READ MARCSTATE | 0x30 0x12
 I (3367) CC1101: Operation: READ TXBYTES | 0x30 0x02 
 I (3367) CC1101: GDO0 level: 0
 ```
-`TXOFF_MODE` will put our radio into `FSTXON` state upon a successful transmission completion. As expected, our `MARCSTATE` register lets us know we are in the `FSXTON` state (corresponding to `0x12`). We also see from the `TXBYTES` register that we have exactly 2 (`0x02`) bytes in our TX FIFO. 
+As expected, our `MARCSTATE` register lets us know we are currently in the `FSXTON` state (corresponding to `0x12`). We also see from the `TXBYTES` register that we have exactly 2 (`0x02`) bytes in our TX FIFO. 
 
 Since we only have 2 bytes left and our TX FIFO threshold is 5, Our `GDO0` pin is now reading low.
 
