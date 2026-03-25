@@ -87,7 +87,7 @@ void spi_transaction(spi_device_handle_t cc1101, const uint8_t* data, size_t len
     t.rx_buffer = rx; // rx[0] will always be the Chip Status Byte (section 10.1 of the datasheet)
     t.length = len * 8;
     ESP_ERROR_CHECK(spi_device_polling_transmit(cc1101, &t));
-    // Logging functionality to print our result if shouldLog is true
+    // Optional debugging logging functionality to print our result if shouldLog is true
     if (shouldLog) {
         char buffer[256] = {0};
         int offset = 0;
@@ -308,8 +308,7 @@ extern "C" void app_main(void)
             CC1101_VALUE_IOCFG0
         },
         2,
-        "GDO0 CONFIG",
-        true
+        "GDO0 CONFIG"
     );
     // FIFO THR
     spi_transaction(

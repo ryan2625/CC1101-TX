@@ -105,7 +105,7 @@ Using the `FOCCFG` register as an example, suppose we want to set the `FOC_PRE_K
 </div>
 <br>
 
-To preserve all other default values while only updating the `FOC_PRE_K` field, the resulting byte we send after our [header byte](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) will be `0011 1110` (or `0x3E` in hexadecimal). The table below shows the exact bit changes when we update this register.
+To preserve all other default values while only updating the `FOC_PRE_K` field, the resulting byte we send will be `0011 1110` (or `0x3E` in hexadecimal). The table below shows the exact bit changes when we update this register.
 <div align="center">
 
 | Bits | Field             | Default | New Value |
@@ -304,7 +304,7 @@ Page 28: Simplified Radio Control Diagram
 </div>
 
 > [!NOTE]
-> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in. For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The full state control diagram can be found on page 50.
+> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in.<br><br>For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The full state control diagram can be found on page 50.
 
 ---
 
@@ -341,7 +341,9 @@ Every radio transmission has specific parameters that must be configured, regard
 
 # 2. Frequency Programming
 ## **Section 21: Frequency Programming** Overview
-Frequency programming in the CC1101 is a channel oriented system. This means that you can store multiple frequencies inside registers and switch between them instantaneously. In this guide, we will only be configuring one frequency, so the parts in the datasheet regarding the `MDMCFG0.CHANSPC_M`, `MDMCFG1.CHANSPC_E`, `FSCTRL1.FREQ_IF`, and `CHANNR.CHAN` channel fields can be ignored for simplicity. Note that parameters such as the frequency can only be changed while the radio is in `IDLE` mode.
+Frequency programming in the CC1101 is a channel oriented system. This means that you can store multiple frequencies inside registers and switch between them instantaneously. In this guide, we will only be configuring one frequency, so the parts in the datasheet regarding the `MDMCFG0.CHANSPC_M`, `MDMCFG1.CHANSPC_E`, `FSCTRL1.FREQ_IF`, and `CHANNR.CHAN` channel fields can be ignored for simplicity. 
+
+Note that parameters such as the frequency can only be changed while the radio is in the `IDLE` state.
 
 The frequency is stored as a 24 bit word split across three registers containing 1 byte each: `FREQ2`, `FREQ1`, and `FREQ0`. Table 45 shows the  addresses to each register (`0x0D`, `0x0E`, and `0x0F` respectively).
 
@@ -468,7 +470,9 @@ Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/ma
 
 # 3. Modulation
 ## **Section 16: Modulation Formats** Overview
-The CC1101 supports amplitude, frequency, and phase modulation formats. For this guide, we will be focusing on a type of frequency modulation known as [2-FSK](https://en.wikipedia.org/wiki/Frequency-shift_keying) (binary frequency shift keying). An example of how 2-FSK works in practice can be found in the [Carrier Frequency](#carrier-frequency) section. We can see from the table below that the value of `000` corresponds to 2-FSK modulation. The default value in this register is conveniently set to 2-FSK already, so we technically don't have to worry about this register right now.
+The CC1101 supports amplitude, frequency, and phase modulation formats. For this guide, we will be focusing on a type of frequency modulation known as [2-FSK](https://en.wikipedia.org/wiki/Frequency-shift_keying) (binary frequency shift keying). An example of how 2-FSK works in practice can be found in the [Carrier Frequency](#carrier-frequency) section. 
+
+We can see from the table below that the value of `000` corresponds to 2-FSK modulation. The default value in this register is conveniently set to 2-FSK already, so we technically don't have to worry about this register right now.
 
 <div align="center">
 
@@ -479,7 +483,9 @@ Page 77: Modulation Format Value Mappings in the `MDMCFG2.MOD_FORMAT` Field at `
 </div>
 
 ## Scientific Notation
-2-FSK works by shifting the frequency by an amount called the 'deviation.' The larger the deviation is, the easier it is for a radio to interpret incoming signals. To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. The mantissa allows fine adjustment of the deviation, while the exponent scales the deviation exponentially. These concepts are also used in [Scientific Notation](https://en.wikipedia.org/wiki/Scientific_notation). The mantissa and exponent values are configured in the `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` fields respectively at address `0x15`. 
+2-FSK works by shifting the frequency by an amount called the 'deviation.' The larger the deviation is, the easier it is for a radio to interpret incoming signals. To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. 
+
+The mantissa allows fine adjustment of the deviation, while the exponent scales the deviation exponentially. These concepts are also used in [Scientific Notation](https://en.wikipedia.org/wiki/Scientific_notation). The mantissa and exponent values are configured in the `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` fields respectively at address `0x15`. 
 
 > [!NOTE]
 > For example, 300 written in scientific notation is 3 * 10<sup>2</sup>. 3 is the mantissa, and 2 is the exponent. We can see that changing the value of the exponent will cause a more drastic change in the result of this equation than changing the mantissa.
@@ -506,7 +512,9 @@ Where *f<sub>xosc</sub>* is the frequency of the crystal oscillator, *DEVIATION_
 
 In practice, the data rate and frequency deviation should be chosen together, but for simplicity we will target a generally safe deviation of approximately 25 kHz. Relating the data rate to the frequency is called the *modulation index*. Further reading on 2-FSK is recommended if you want to optimize your values.
 
-Since the `DEVIATN` register uses 3 bits for the exponent and 3 bits for the mantissa, each part can hold a value from `000` to `111`. This means there are 8 different valid values for each part, which means a total of 64 possible combinations between the mantissa and the exponent values. I experimented with a few different values trying to get as close as possible to 25 kHz, and the best combination I came up with was *DEVIATION_M* = 0 and *DEVIATION_E* = 4. This gives us the equation:
+Since the `DEVIATN` register uses 3 bits for the exponent and 3 bits for the mantissa, each part can hold a value from `000` to `111`. This means there are 8 different valid values for each part, which means a total of 64 possible combinations between the mantissa and the exponent values. 
+
+I experimented with a few different values trying to get as close as possible to 25 kHz, and the best combination I came up with was *DEVIATION_M* = 0 and *DEVIATION_E* = 4. This gives us the equation:
 
 <div align="center">
 
@@ -520,9 +528,13 @@ So this results in *f<sub>dev</sub>* = **25.4 kHz**. The CC1101 derives this dev
 
 # 4. Bit Timing and Data Rate
 ## **Section 12: Data Rate Programming** Overview
-The data rate of the radio determines how fast data is transmitted or received. Similar to how we stored the deviation for 2-FSK modulation, we will store the mantissa and exponent calculated from the data rate equation into registers instead of the literal data rate value. The CC1101 will use these values to derive the data rate in baud, where a baud is a unit of transmission speed. The relevant registers for this section are the `MDMCFG3.DRATE_M` and `MDMCFG4.DRATE_E` fields.
+The data rate of the radio determines how fast data is transmitted or received. Similar to how we stored the deviation for 2-FSK modulation, we will store the mantissa and exponent calculated from the data rate equation into registers instead of the literal data rate value. 
 
-As stated previously, the data rate and frequency deviation should be related to one another through a modulation index. For this guide, we will instead simply use a safe baud rate of 25 kBaud. Having a data rate of 25 kBaud  means we are transmitting 25,000 symbols per second, where a symbol is defined as the radio frequency state that represents the data. The only important part to understand about symbols now is that for 2-FSK, 25,000 symbols per second = 25,000 bits per second.
+The CC1101 will use these values to derive the data rate in baud, where a baud is a unit of transmission speed. The relevant registers for this section are the `MDMCFG3.DRATE_M` and `MDMCFG4.DRATE_E` fields.
+
+As stated previously, the data rate and frequency deviation should be related to one another through a modulation index. For this guide, we will instead simply use a safe baud rate of 25 kBaud. 
+
+>Note: Having a data rate of 25 kBaud  means we are transmitting 25,000 symbols per second, where a symbol is defined as the radio frequency state that represents the data. The only important part to understand about symbols now is that for 2-FSK, 25,000 symbols per second = 25,000 bits per second.
 
 <div align="center">
 
@@ -615,7 +627,9 @@ This guide uses the CC1101 packet handler (TX FIFO packet mode), not synchronous
 </div>
 
 ### Preamble Bits
-Preamble bits (or bytes) are a sequence of alternating bits sent at the start of a transmission that serve multiple purposes. The first is that they denote the beginning of a packet, letting the receiver know a transmission is starting. The second purpose is that they assist in synchronizing the transmission timing between the receiver and the transmitter to ensure data is processed correctly. The overall purpose of the preamble bits is to help tune the receiver before meaningful data is sent.
+Preamble bits (or bytes) are a sequence of alternating bits sent at the start of a transmission that serve multiple purposes. The first is that they denote the beginning of a packet, letting the receiver know a transmission is starting. 
+
+The second purpose is that they assist in synchronizing the transmission timing between the receiver and the transmitter to ensure data is processed correctly. The overall purpose of the preamble bits is to help tune the receiver before meaningful data is sent.
 
 In the CC1101, the amount of preamble bytes sent is configured in the `MDMCFG1.NUM_PREAMBLE` field at `0x13`. The datasheet recommends using a 4-byte preamble (32 bits). When the radio enters `TX` mode, it will keep transmitting the preamble bytes you configured infinitely until a byte is written to the TX FIFO. 
 
@@ -720,7 +734,7 @@ Page 81: `MCSM1.TXOFF_MODE` Field
 <br>
 
 The second scenario is `TXFIFO_UNDERFLOW`. This state occurs when the TX FIFO becomes empty in the middle of transmitting a packet. This error primarily happens when we specify a packet length, but the TX FIFO has less bytes than the number we configured. 
-> For example, if we are in static packet length mode and send the `PKTLEN` register the value `0x0A`, this will make our expected packet length 10 bytes. If we only fill our TX FIFO with 5 bytes, we will run out of data to send. Consequently, the radio enters the `TXFIFO_UNDERFLOW` state when we are transmitting and run out of data to send.
+> For example, if we are in static packet length mode and send the `PKTLEN` register the value `0x0A`, this will make our expected packet length 10 bytes. If we only fill our TX FIFO with 5 bytes, we will run out of data to send when in `TX` mode. Consequently, the radio enters the `TXFIFO_UNDERFLOW` state when we are transmitting and run out of data to send.
 
 
 The third scenario, TX FIFO Overflow, occurs when we fill the TX FIFO with more than 64 bytes of data. In this scenario, there isn't a specific state the radio enters like there is for underflow. Instead, the data in the FIFO might become corrupted and the radio may behave unpredictably. 
@@ -735,7 +749,9 @@ We must put the radio in a known safe state after we encounter an error. A commo
 
 The command strobe to send for error recovery in `TX` mode is `SFTX` at address `0x3B`. This will empty (flush) the TX FIFO and put the device in the `IDLE` state. 
 
-We can see what state the radio is in from either the `MARCSTATE` register or the chip status byte found in **Section 10.1**. As seen in the image below, the chip status byte `STATE` field holds the state the radio is in, while the `FIFO_BYTES_AVAILABLE` field contains the number of bytes that can be written to the TX FIFO (with one caveat explained in a [later section](#bytes-available)). This field's max value is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. The chip status byte is always the first byte received back from the CC1101 in an SPI transaction.
+We can see what state the radio is in from either the `MARCSTATE` register or the chip status byte found in **Section 10.1**. As seen in the image below, the chip status byte `STATE` field holds the state the radio is in, while the `FIFO_BYTES_AVAILABLE` field contains the number of bytes that can be written to the TX FIFO. The meaning of this field changes if we are reading a register instead of writing to one.
+
+This field's max value is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. The chip status byte is always the first byte received back from the CC1101 in an SPI transaction.
 
 To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status register at address `0x3A`. The header byte to access this is `0xFA` (`0x3A` with the read and burst bits set).
 
@@ -851,7 +867,7 @@ To transmit a signal, the first thing our program must do is configure the SPI b
 
 ### `spi_transaction`
 
-There are two important helper functions inside `main.cpp` that make accessing registers easier. The first function, `spi_transaction`, simplifies SPI transactions. To perform a transaction, we simply pass in the device handle, an array of bytes to send, and the length of that array. This function is similar to the `transmit_data` function from the first guide.
+There are two important helper functions inside `main.cpp` that make accessing registers easier. The first function, `spi_transaction`, simplifies SPI transactions. To perform a transaction with this function, we simply pass in the device handle, an array of bytes to send, and the length of that array. This function is similar to the `transmit_data` function from the first guide.
 
 ```cpp
 void spi_transaction(spi_device_handle_t cc1101, const uint8_t* data, size_t len) {
@@ -868,14 +884,14 @@ void spi_transaction(spi_device_handle_t cc1101, const uint8_t* data, size_t len
 - The `tx_buffer` is filled with the data we send, and the `rx_buffer` is filled with the response from the CC1101 which we can read off after the transaction.
 - [`spi_device_polling_transmit`](https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/peripherals/spi_master.html#_CPPv427spi_device_polling_transmit19spi_device_handle_tP17spi_transaction_t) is the function from the ESP-IDF API that performs the actual SPI transaction.
 - `rx_buffer[0]` will always be the chip status byte.
-- `tx_buffer[0]` will be the header byte or the byte used to send a command strobe
+- `tx_buffer[0]` will always be the header byte.
 
 ### `calculate_header_byte`
-The second function helps `calculate_header_byte` us calculate the header byte based off of how we want to interact with a register.
+The second function `calculate_header_byte` helps us calculate the header byte based off of how we want to interact with a register.
 
-As previously mentioned, the header byte in an SPI transaction consists of a R/W bit, a burst bit, and a 6-bit address. If you are writing to a register without burst access (R/W bit = `0`, burst bit = `0`), the header byte will be the exact same as the register address.
+As previously mentioned, the [header byte](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) in an SPI transaction consists of a R/W bit, a burst bit, and a 6-bit address. If you are writing to a register without burst access (R/W bit = `0`, burst bit = `0`), the header byte will be the exact same as the register address.
 
-If you are reading, using burst access, or both, the header byte changes by a fixed amount. We can use the [bitwise `OR` operator on the register value](https://www.geeksforgeeks.org/dsa/bitwise-or-operator-in-programming/) to construct the final header byte to send.
+If you are reading, using burst access, or both, the header byte changes by a fixed amount. We can use the [bitwise `OR` operator](https://www.geeksforgeeks.org/dsa/bitwise-or-operator-in-programming/) on the register value to construct the final header byte to send.
 
 Let's look at one example: suppose you want to write to the register `FREQ2`, which has the address `0x0F` (`1111` in binary).
 
@@ -926,13 +942,13 @@ Configuring the registers is a very repetitive task. See the section [Setting th
 constexpr uint8_t CC1101_CONFIG_FREQ2 = 0x0D;
 ```
 
-These constants are used to construct the final header byte with the `calculate_header_byte` function based on the burst and R/W bits. For registers that are accessed in burst mode, we only define the first register in the transaction. Burst mode automatically increments the register address during the transaction, so we don't need to explicitly define the subsequent registers. The following registers are used but not explicitly defined as constants:
+These constants are used to construct the final header byte with the `calculate_header_byte` function based on the burst and R/W bits. For registers that are accessed in burst mode, we only send the first register's address in the transaction. Burst mode automatically increments the register address during the transaction, so we don't need to explicitly define the subsequent registers. The following registers are used but not explicitly defined as constants:
 - `FREQ1` and `FREQ0`, which come after `FREQ2`
 - `SYNC0`, which comes after `SYNC1`
 
 That is why you won't find a register specificed like `CC1101_CONFIG_SYNC0` in the code (as it is accessed automatically through burst mode), but you will find `CC1101_VALUE_SYNC0` because we still need to know what values to send to these addresses. 
 
-Every single constant for register values defined in `main.cpp` has a comment explaining what the value means.
+Every single constant for register values defined in `main.cpp` has a comment explaining what their respective value means.
 
 ## Running the Program
 At this point, we have:
@@ -947,7 +963,6 @@ It is encouraged to skim the program and connect the ideas we have discussed so 
 ```text
 I (297) main_task: Calling app_main()
 I (1297) MAIN: Hello World...?
-I (1297) CC1101: Operation: GDO0 CONFIG | 0x0F 0x0F
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
 I (2297) CC1101: Operation: READ AUTOCAL | 0x00 0x14
 I (2297) CC1101: Operation: READ FREQUENCY | 0x00 0x0C 0x1D 0x8A 
@@ -975,32 +990,7 @@ I (4367) CC1101: Operation: READ TXBYTES | 0x70 0x80
 I (4367) CC1101: GDO0 level: 0
 I (4367) main_task: Returned from app_main()
 ```
-
----
-
-The first relevant log associated with an SPI transaction is:
-```
-I (1297) CC1101: Operation: GDO0 CONFIG | 0x0F 0x0F
-```
-This log appears while we are configuring the registers and before our transmission. Recall that the first byte received back in any SPI transaction for the CC1101 is the chip status byte, which is the first `0x0F` in the log above.
-
- <a id="bytes-available"></a>
- The interesting thing to note is that according to the data sheet, the meaning of the `FIFO_BYTES_AVAILABLE` field changes depending on if the transaction is a read or a write. For write operations, this field indicates how many bytes can be written to the TX FIFO. For read operations, this field indicates how many bytes are available to read from the RX FIFO.
-
-I wanted to log the value of at least one write operation so we can see what the `FIFO_BYTES_AVAILABLE` field would be before we interact with the TX FIFO. We can see that the `0x0F` value corresponds to a ready chip, the radio being in the `IDLE` state, and at least 15 free bytes in the TX FIFO.
-
-The bytes logged after the first in a write transaction can be ignored.
-
-<div align='center'>
-
-<img src="Assets/CHIP_STATUS_BYTE.png" width="95%">
-
-Page 31: Chip Status Byte Format
-</div>
-
----
-
-The next part of the log is reading back all of the register values we just configured, and after loading 7 bytes into the TX FIFO. I've attached comments to some of the logs below...
+The first part of the log is printed after loading 7 bytes into the TX FIFO and configuring all of our registers. As the comment states, the log here is reading back all of our configuration values. I've attached comments to some of the logs below...
 ```text
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
 I (2297) CC1101: Operation: READ AUTOCAL | 0x00 0x14
