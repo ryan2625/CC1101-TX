@@ -1,4 +1,4 @@
-﻿# CC1101-TX
+﻿# ESP32-CC1101-Transmission
 
 <div align="center">
 <img src="Assets/cc1101.png" width="50%">
