@@ -976,7 +976,7 @@ At this point, we have:
 The final step is to examine the program in [`main.cpp`](https://github.com/ryan2625/CC1101-TX/blob/main/src/main.cpp) and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
 
 It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. When we run the program, we get the following output: 
-```text
+```cpp
 I (297) main_task: Calling app_main()
 I (1297) MAIN: Hello World...?
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
@@ -1075,6 +1075,25 @@ I (4367) CC1101: GDO0 level: 0
 Before attempting to send these 5 bytes, we only had 2 bytes in our TX FIFO. This means the radio will now enter the `TXFIFO_UNDERFLOW` state. We can confirm this since the chip status byte value is `0x70` and the `TXBYTES` register value is `0x80`.
 
 ## Proving the Transmission Was Successful
+I've set up a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework alongside the RadioLib library. In this code, I match all of the parameters we set in `main.cpp` including the desired frequency, bitrate, and modulation format. 
+
+The output of the code in that repository logs the following:
+```cpp
+[CC1101] Waiting for 5-byte packet...
+[CC1101] Timeout
+
+[CC1101] Waiting for 5-byte packet...
+[CC1101] Packet received
+Data:  D3 91 01 01 01
+RSSI:  -58.50 dBm
+LQI:   0
+
+[CC1101] Waiting for 5-byte packet...
+[CC1101] Packet received
+Data:  D3 91 01 01 DA  // corrupted / underflow artifact
+RSSI:  -55.00 dBm
+LQI:   26
+```
 
 # 8. Datasheet and Theory Abstraction in Libraries
 Transmitting a CC1101 signal with just the ESP-IDF framework necessitates a deep understanding of the datasheet as well as far more manual setup. Accomplishing the same goal with a framework requires minimal effort and little understanding of the theory. 
