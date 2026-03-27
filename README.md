@@ -694,7 +694,7 @@ As seen earlier in the [simplified radio control diagram](https://github.com/rya
 
 Every time the radio starts up, it should be [reset with the `SRES` strobe](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#cc1101-initialization-procedure) and put into IDLE mode. To transmit data, we have to go from the `IDLE` state to the `TX` state. Luckily, we can reach this mode with a single command strobe called `STX` located at address `0x35`.
 
-There is one more aspect of the radio state that should be considered before transmitting a signal: calibrating the [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer). We can enable automatic calibration when entering `TX` mode with the [`MCSM0.FS_AUTOCAL`](#Assets/MCSM0.png) field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
+There is one more aspect of the radio state that should be considered before transmitting a signal: calibrating the [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer). We can enable automatic calibration when entering `TX` mode with the [`MCSM0.FS_AUTOCAL`](Assets/MCSM0.png) field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
 
 Shown below is the `MARCSTATE` register that will contain the current state the radio is in, which is useful for debugging purposes.
 
