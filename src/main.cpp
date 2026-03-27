@@ -27,7 +27,7 @@ constexpr uint8_t CC1101_STROBE_SRES      = 0x30; // Reset Chip
 constexpr uint8_t CC1101_STROBE_STX       = 0x35; // Enter `TX` Mode
 constexpr uint8_t CC1101_STROBE_SIDLE     = 0x36; // Enter `IDLE` Mode
 constexpr uint8_t CC1101_STROBE_SFTX      = 0x3B; // Flush the TX FIFO
-// ============ CONFIG REGISTERS ============ //  // Field Name 
+// ============ CONFIG REGISTERS ============ //  // Relevant Field Names
 constexpr uint8_t CC1101_CONFIG_FREQ2     = 0x0D; // FREQ[21:16]
 constexpr uint8_t CC1101_CONFIG_MDMCFG2   = 0x12; // SYNC_MODE, MOD_FORMAT
 constexpr uint8_t CC1101_CONFIG_DEVIATN   = 0x15; // DEVIATION_E, DEVIATION_M

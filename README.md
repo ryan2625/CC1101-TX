@@ -963,7 +963,7 @@ For registers that are accessed in burst mode, we only send the first register's
 - `FREQ1` and `FREQ0`, which come after `FREQ2`
 - `SYNC0`, which comes after `SYNC1`
 
-That is why you won't find a register specificed like `CC1101_CONFIG_SYNC0` in the code (as it is accessed automatically through burst mode), but you will find `CC1101_VALUE_SYNC0` because we still need to know what values to send to these addresses. 
+That is why you won't find a register address constant like `CC1101_CONFIG_SYNC0` in the code (as it is accessed automatically through burst mode), but you will find `CC1101_VALUE_SYNC0` because we still need to know what values to send to these addresses. 
 
 >Note: Every single constant for register values defined in `main.cpp` has a comment explaining what their respective value means.
 
@@ -976,7 +976,7 @@ At this point, we have:
 
 The final step is to examine the program in [`main.cpp`](https://github.com/ryan2625/CC1101-TX/blob/main/src/main.cpp) and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
 
-It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. When we run the program, we get the following output: 
+It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. If our devices are connected properly, we get the following output when we run the program: 
 ```rust
 I (297) main_task: Calling app_main()
 I (1297) MAIN: Hello World...?
