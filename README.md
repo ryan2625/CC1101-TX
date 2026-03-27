@@ -908,7 +908,7 @@ As previously mentioned, the [header byte](https://github.com/ryan2625/ESP32-CC1
 
 If you are reading, using burst access, or both, the header byte changes by a fixed amount. We can use the [bitwise `OR` operator](https://www.geeksforgeeks.org/dsa/bitwise-or-operator-in-programming/) on the register value to construct the final header byte to send.
 
-Let's look at one example to demonstrate how this function works. Suppose you want to write to the register `FREQ2`, which has the address `0x0F` (`1111` in binary). The steps are as follows:
+Let's look at one example to demonstrate how this function works. Suppose you want to write to the register `FREQ0`, which has the address `0x0F` (`1111` in binary). The steps are as follows:
 
 ### Pad the address to a full byte
 
