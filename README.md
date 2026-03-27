@@ -696,7 +696,7 @@ Every time the radio starts up, it should be [reset with the `SRES` strobe](http
 
 There is one more aspect of the radio state that should be considered before transmitting a signal: calibrating the [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer). We can enable automatic calibration when entering `TX` mode with the [`MCSM0.FS_AUTOCAL`](Assets/MCSM0.png) field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
 
-Shown below is the `MARCSTATE` register that will contain the current state the radio is in, which is useful for debugging purposes.
+Shown below is the status register `MARCSTATE` that will contain the current state the radio is in, which is useful for debugging purposes.
 
 <div align='center'>
 
@@ -738,7 +738,7 @@ There are three different scenarios in `TX` mode that can occur either when writ
 2. The radio enters the `TXFIFO_UNDERFLOW` state
 3. TX FIFO Overflow occurs
 
-The first scenario is activated when a transmission is completed without any errors. In this case, the `MCSM1.TXOFF_MODE` field at address `0x17` will automatically put the radio in one of four states.
+The first scenario is activated when a transmission is completed without any errors. In this case, the `MCSM1.TXOFF_MODE` field at address `0x17` will automatically put the radio into one of four states.
 <div align='center'>
 
 <img src="Assets/TXOFF_MODE_reg.png" width="90%">
@@ -748,14 +748,14 @@ Page 81: `MCSM1.TXOFF_MODE` Field
 </div>
 <br>
 
-The second scenario is `TXFIFO_UNDERFLOW`. This state occurs when the TX FIFO becomes empty in the middle of transmitting a packet. This error primarily happens when we specify a packet length, but the TX FIFO has less bytes than the number we configured. 
+The second scenario is entering the `TXFIFO_UNDERFLOW` state. This state occurs when the TX FIFO becomes empty in the middle of transmitting a packet. This error primarily happens when we specify a packet length, but the TX FIFO has less bytes than the number we configured. 
 > For example, if we are in static packet length mode and send the `PKTLEN` register the value `0x0A`, this will make our expected packet length 10 bytes. If we only fill our TX FIFO with 5 bytes and enter 'TX' mode, we will run out of bytes to send. In this scenario, the radio will enter the error state `TXFIFO_UNDERFLOW`.
 
 
 The third scenario, TX FIFO Overflow, occurs when we fill the TX FIFO with more than 64 bytes of data. In this scenario, there isn't a specific state the radio enters like there is for underflow. Instead, the data in the FIFO might become corrupted and the radio may behave unpredictably. 
 
 > [!IMPORTANT]
-> Suppose we set a packet length that is less than the bytes we stored in the TX FIFO. Upon completing a transmission, we may end up having leftover bytes sitting in the FIFO. This is not considered TX FIFO Overflow. Those bytes just remain there until they are emptied or sent in the next transmission.
+> Suppose we set our packet length as 10 but fill the TX FIFO with 20 bytes. Upon completing a transmission, we may end up having leftover bytes sitting in the FIFO. This is not considered TX FIFO Overflow. Those bytes just remain there until they are emptied or sent in the next transmission.
 
 ---
 
@@ -774,7 +774,7 @@ The meaning of this field changes if we are reading a register instead of writin
 Page 31: Chip Status Byte Format
 </div>
 
-The maximum value of `FIFO_BYTES_AVAILABLE` is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status register at address `0x3A`. The header byte to access this is `0xFA` (`0x3A` with the read and burst bits set).
+The maximum value of `FIFO_BYTES_AVAILABLE` is 15, or `1111`. When `FIFO_BYTES_AVAILABLE` = 15, 15 or more bytes are available/free. To get the exact number of bytes in the TX FIFO, check the `TXBYTES` status register at address `0x3A`. The header byte you should send to access this register is `0xFA` (`0x3A` with the read and burst bits set).
 
 >Note: Recall that the  chip status byte is always the first byte received back from the CC1101 in an SPI transaction.
 ## TX FIFO Threshold
@@ -849,7 +849,7 @@ We can read the `GDO0` pin state with the [`gpio_get_level`](https://docs.espres
 
 - `gpio_num`: The GPIO pin you want to read the level of (high or low)
 
-Assuming we configured the `GDO0` pin in `IOCFG0.GDO0_CFG` to signal the TX FIFO threshold, this will return 1 when above the threshold and 0 when below it.
+Assuming we configured the `GDO0` pin in `IOCFG0.GDO0_CFG` to signal the TX FIFO threshold, the pin will return 1 when above the threshold and 0 when below it.
 
 ```cpp
 #include "driver/gpio.h"
@@ -908,9 +908,9 @@ As previously mentioned, the [header byte](https://github.com/ryan2625/ESP32-CC1
 
 If you are reading, using burst access, or both, the header byte changes by a fixed amount. We can use the [bitwise `OR` operator](https://www.geeksforgeeks.org/dsa/bitwise-or-operator-in-programming/) on the register value to construct the final header byte to send.
 
-Let's look at one example: suppose you want to write to the register `FREQ2`, which has the address `0x0F` (`1111` in binary).
+Let's look at one example to demonstrate how this function works. Suppose you want to write to the register `FREQ2`, which has the address `0x0F` (`1111` in binary). The steps are as follows:
 
-### First, pad the address to a full byte
+### Pad the address to a full byte
 
 ```c
 0000 1111
@@ -924,7 +924,7 @@ For a read operation, the R/W bit is `1`, which corresponds to:
 1000 0000
 ```
 
-### Combine using bitwise OR
+### Use the bitwise OR operation on the two bytes
 
 ```c
 0000 1111
