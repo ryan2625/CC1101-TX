@@ -12,7 +12,7 @@ Reading [my previous writeup](https://github.com/ryan2625/ESP32-CC1101/tree/main
 
 It is far more complex to transmit a radio signal with our device and the theory can be difficult to understand, so ensure you are comfortable with the topics in that guide before proceeding.
 
-In addition to the steps outlined in my first guide, transmitting a signal with the CC1101 requires multiple stages:
+In addition to the [steps](https://github.com/ryan2625/ESP32-CC1101#steps) outlined in my first guide, transmitting a signal with the CC1101 requires multiple stages:
 
 - Setting the carrier frequency (i.e. 315 MHz)
 - Configuring the modulation format (AM, FM, etc)
