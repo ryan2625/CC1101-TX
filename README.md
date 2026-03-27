@@ -89,7 +89,7 @@ Visual Representation of AM and FM
 </div>
 
 ## Register Values
-A 'register' inside of the CC1101 is essentially an addressable location that contains a byte of data relating to [configuration settings, status information, or command strobes](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#spi-accessible-types). Some registers are dedicated to containing only a single field. One example of this is the `RSSI` register, which uses all 8 bits to hold the signal strength information. 
+A 'register' inside of the CC1101 is an addressable location that contains a byte of data relating to [configuration settings, status information, or command strobes](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#spi-accessible-types). Some registers are dedicated to containing only a single field. One example of this is the `RSSI` register, which uses all 8 bits to hold the signal strength information. 
 
 Alternatively, some registers have unused bits or may contain multiple fields. In these cases, since multiple fields share the same register, **we must modify only the relevant bits while leaving the others unchanged**. 
 
@@ -127,7 +127,7 @@ The CC1101 datasheet is over 100 pages long and contains many diagrams, equation
 
 1. The first category includes sections regarding general configuration. This includes how we can communicate with the CC1101, any specific power-on sequence the device requires, and other basic setup details.
 
-2. The second category includes sections regarding configuring the signal we transmit. This includes the frequency, modulation technique, data rate, and radio power level.
+2. The second category includes sections regarding configuring the parameters of the signal we transmit. This includes the frequency, modulation technique, data rate, and radio power level.
 
 3. The third category includes sections that may be helpful for transmitting a signal, but are not strictly necessary. Any sections related to receiving signals will be ignored, since we are focusing solely on transmission.
 
@@ -291,7 +291,7 @@ Whenever we are writing firmware for an embedded device, we need to know how to 
 
 - **Section 10: 4-Wire Serial Configuration and Data Interface** - This section tells us the protocol to use when communicating with the chip ([SPI](https://www.analog.com/en/resources/analog-dialogue/articles/introduction-to-spi-interface.html)) and how to access registers in the CC1101. This is one of the first and most important sections to understand when writing firmware for this chip, as everything after this point builds off of this section.
 
-- **Section 29: Configuration Registers** - Here we will find the addresses for all of the registers in the radio. These include status registers and configuration registers, where we send the values for our radio parameters such as frequency and modulation format. Each section in the datasheet lists its relevant registers, so **Section 29** will be referenced frequently.
+- **Section 29: Configuration Registers** - Here we will find the addresses for all of the registers in the radio. These include status registers as well as configuration registers that hold our radio's signal parameters. Each section in the datasheet lists its relevant registers, so **Section 29** will be referenced frequently.
 
 - **Section 19: Radio Control** - Describes important setup details and how the radio operates internally through state transitions. **Section 19.0** shows us the state control diagram, while **Section 19.1** tells us the exact sequence the device expects when it powers on.
 
@@ -309,7 +309,7 @@ Page 28: Simplified Radio Control Diagram
 ---
 
 ### Signal Configuration Sections
-Every radio transmission has specific parameters that must be configured, regardless of the device being used. These common parameters are the frequency, modulation type, data rate, and transmit power. Technically, the CC1101 has values for many of these parameters in its registers by default, but they're not exactly useful if we want to transmit a custom signal. Therefore, we will configure these parameters manually. 
+Every radio transmission has specific parameters that must be configured, regardless of the device being used. These common parameters are the frequency, modulation type, data rate, and transmit power. Technically, the CC1101 has values for many of these in its registers by default, but they're not exactly useful if we want to transmit a custom signal. Therefore, we will configure these parameters manually. 
 
 <div align='center'>
 
@@ -322,9 +322,9 @@ Every radio transmission has specific parameters that must be configured, regard
 </div>
 
 
-- **Section 21: Frequency Programming** - Provides the relevant equations and registers for setting up the frequency the CC1101 will transmit at. You will also find information about setting up different frequency channels, where you can switch between multiple frequencies (such as 315 MHz, 433 MHz, and 915 MHz) quickly.
+- **Section 21: Frequency Programming** - Provides the relevant equations and registers for setting up the frequency the CC1101 will transmit at. You will also find information about setting up different frequency channels, where you can switch between multiple frequencies quickly (such as 315 MHz, 433 MHz, and 915 MHz).
 
-- **Section 16: Modulation Formats** - Talks about the different types of modulation formats the CC1101 is capable of using
+- **Section 16: Modulation Formats** - Talks about the different types of modulation formats the CC1101 is capable of implementing
 
 - **Section 12: Data Rate Programming** - Discusses how to calculate and configure the data rate, which is how fast we send bits with our radio. 
 
@@ -389,7 +389,7 @@ The main equation of importance to calculate our carrier frequency is the one be
 </div>
 <br>
 
-Where *f<sub>carrier</sub>* is the desired transmit signal (such as 315 MHz), *f<sub>xosc</sub>* is the frequency at which the crystal oscillator vibrates (26 MHz), and *FREQ* is the value we need to program into the frequency registers discussed above. The other variables regarding channels such as *CHAN* and *CHANSPC_M* can be set to zero and simplify the equation (since we are not using any channel functionality on the CC1101). The resulting simplified equation is:
+Where *f<sub>carrier</sub>* is the desired transmit signal (such as 315 MHz), *f<sub>xosc</sub>* is the frequency at which the crystal oscillator vibrates (26 MHz), and *FREQ* is the value we need to program into the frequency registers discussed above. The other variables regarding channels such as *CHAN* and *CHANSPC_M* can be set to zero to simplify the equation (since we are not using any channel functionality on the CC1101). The resulting simplified equation is:
 
 <div align="center">
 
@@ -472,13 +472,13 @@ Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/ma
 ## **Section 16: Modulation Formats** Overview
 The CC1101 supports amplitude, frequency, and phase modulation formats. For this guide, we will be focusing on a type of frequency modulation known as [2-FSK](https://en.wikipedia.org/wiki/Frequency-shift_keying) (binary frequency shift keying). An example of how 2-FSK works in practice can be found in the [Carrier Frequency](#carrier-frequency) section. 
 
-We can see from the table below that the value of `000` corresponds to 2-FSK modulation. The default value in this register is conveniently set to 2-FSK already, so we technically don't have to worry about this register right now.
+The register that stores the modulation format is named `MDMCFG2`. There is a table inside this register that shows we would need to send a value of `000` to the `MOD_FORMAT` field to specify 2-FSK as our format. The default value for this field is conveniently set to `000` already, so we technically don't have to worry about this register right now.
 
 <div align="center">
 
 ![Mod Format Register](Assets/MOD_FORMAT.png)
 
-Page 77: Modulation Format Value Mappings in the `MDMCFG2.MOD_FORMAT` Field at `0x12`
+Page 77: Modulation Format Value Mappings in the `MDMCFG2.MOD_FORMAT` Field at address `0x12`
 
 </div>
 
