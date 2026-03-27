@@ -69,10 +69,9 @@ This README will heavily reference the official **[TI CC1101 transceiver datashe
       - [`spi_transaction`](#spi_transaction)
       - [`calculate_header_byte`](#calculate_header_byte)
    - [Configuring Registers](#configuring-registers)
-   - [Running the Program](#running-the-program)  
+8. [Running the Program](#9-running-the-program)  
    - [Proving the Transmission Was Successful](#proving-the-transmission-was-successful)
-
-8. [Datasheet and Theory Abstraction in Libraries](#8-datasheet-and-theory-abstraction-in-libraries)
+9. [Datasheet and Theory Abstraction in Libraries](#9-datasheet-and-theory-abstraction-in-libraries)
    - [Other Media](#other-media)
 
 # 1. Important Concepts
@@ -966,7 +965,7 @@ That is why you won't find a register specificed like `CC1101_CONFIG_SYNC0` in t
 
 >Note: Every single constant for register values defined in `main.cpp` has a comment explaining what their respective value means.
 
-## Running the Program
+# 8. Running the Program
 At this point, we have:
 - Identified the registers required to transmit a signal
 - Calculated the values required for a 315 MHz 2-FSK signal
@@ -1120,7 +1119,7 @@ This wouldn't make sense though, as there was no byte `DA` ever programmed into 
 ><img src="Assets/setup.png" width="60%">
 ></div>
 
-# 8. Datasheet and Theory Abstraction in Libraries
+# 9. Datasheet and Theory Abstraction in Libraries
 Transmitting a CC1101 signal with just the ESP-IDF framework necessitates a deep understanding of the datasheet as well as far more manual setup. Accomplishing the same goal with a framework requires minimal effort and little understanding of the theory. 
 
 One framework that can help us set everything up faster is the [Arduino platform](https://docs.platformio.org/en/latest/frameworks/arduino.html) that gives us access to all of the ESP32 APIs. This, combined with a library specifically designed to communicate with the CC1101 such as [RadioLib](https://github.com/jgromes/RadioLib) allows for the two devices to be used together without ever having to read the datasheet.
