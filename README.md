@@ -35,7 +35,7 @@ This README will heavily reference the official **[TI CC1101 transceiver datashe
 2. [Frequency Programming](#2-frequency-programming)
     - [Frequency Overview](#section-21-frequency-programming-overview)
     - [Calculating the Frequency](#calculating-the-frequency)
-3. [Modulation](#3-modulation)  
+3. [Modulation Format](#3-modulation-format)  
    - [Modulation Overview](#section-16-modulation-formats-overview)  
    - [Scientific Notation](#scientific-notation)
    - [Calculating the Frequency Deviation](#calculating-the-frequency-deviation)
@@ -452,7 +452,7 @@ extern "C" void app_main(void) {
 Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/main.cpp) is a helper function defined in `main.cpp`. 
 
 
-# 3. Modulation
+# 3. Modulation Format
 ## **Section 16: Modulation Formats** Overview
 The CC1101 supports amplitude, frequency, and phase modulation formats. For this guide, we will be focusing on a type of frequency modulation known as [2-FSK](https://en.wikipedia.org/wiki/Frequency-shift_keying) (binary frequency shift keying). An example of how 2-FSK works in practice can be found in the [Carrier Frequency](#carrier-frequency) section. 
 
