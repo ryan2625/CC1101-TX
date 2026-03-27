@@ -585,7 +585,7 @@ Solving this equation gives us *DRATE_E* = 9.
 
 We now have all the appropriate values to substitute into the equation that tells us the value of *DRATE_M*. Solving that equation gives us *DRATE_M* ​≈ 248.12. We will round this to the nearest integer which will be 248, as the register for the mantissa is only 8 bits. This means it can only store integers between 0-255, no decimals.
 
-Since the data rate mantissa is the only field contained within the `MDMCFG3` register, we do not have to worry about preserving any other bits. We will send our value of 248 here in hexadecimal which works out to be `0xF8`. 
+Since the data rate mantissa is the only field contained within the ![`MDMCFG3`](https://github.com/ryan2625/ESP32-CC1101-Transmission/blob/main/Assets/MDMCFG.png) register, we do not have to worry about preserving any other bits. We will send our value of 248 here in hexadecimal which works out to be `0xF8`. 
 
 The exponent part of the equation is contained in the [`MDMCFG4`](https://github.com/ryan2625/CC1101-TX/blob/main/Assets/MDMCFG.png) register, and it shares this register with fields for configuring the channel bandwidth. It is good practice to preserve the default values in these registers if we don't need to modify them. Therefore, we will send the bits `10` for `CHANBW_E`, `00` for `CHANBW_M`, and `1001` for `DRATE_E`. We end up with `10001001` = `0x89`. 
 
@@ -602,7 +602,7 @@ The exponent part of the equation is contained in the [`MDMCFG4`](https://github
 ## **Section 24: Output Power Programming** Overview
 The output power determines how strong the transmitted radio signal will be. The CC1101 stores up to 8 power amplifier settings in a special register called `PATABLE`. We will only be using one setting, so we can ignore the parts about the `FREND0.PA_POWER` field in the datasheet which would control selecting different power levels. We are going to program the first entry `PATABLE`[0], which is the default power setting used by the radio.
 
-Below is a table showing what power output corresponds to what setting value. These settings vary depending on the frequency band being used, where a frequency band is simply a range of frequencies on the electromagnetic spectrum. We are going to look at the 315 MHz band, as we want to transmit a 315 MHz signal for this project. 
+Below is a table showing what power output corresponds to what setting value. These settings vary depending on the frequency band being used, where a frequency band is simply a range of frequencies on the electromagnetic spectrum. We are going to look at the 315 MHz band column, as we want to transmit a 315 MHz signal for this project. 
 
 <div align='center'>
 
@@ -614,11 +614,11 @@ Below is a table showing what power output corresponds to what setting value. Th
 
 ## Setting the Output Power
 The `PATABLE` register is located at address `0x3E`. Since we are only setting a single power output, we will just be sending one byte to this address. Based on table 39, `0x51` provides a reasonable midrange transmit power for the 315 MHz band; we will send this value to the register. **Section 10.6** provides more information on how to access the `PATABLE` register.
-
+ 
 # 6. Transmitting Packets
 
 ## Packet Structure
-This guide uses the CC1101 packet handler (TX FIFO packet mode), not synchronous/asynchronous serial direct modes. For this mode, the packet structure in the CC1101 follows a particular pattern that is outlined in **Section 15** of the datasheet. 
+This guide uses the CC1101 packet handler (TX FIFO packet mode) to transmit data, not synchronous/asynchronous serial direct modes. For this mode, the packet structure in the CC1101 follows a particular pattern that is outlined in **Section 15** of the datasheet. 
 
 In the figure below, we can see designated bits for things such as Preamble bits, the Sync Word, and the data field. This section of the guide will explain the anatomy of a packet and how to configure its different parts.
 
@@ -645,7 +645,7 @@ Page 77: `MDMCFG1` Register
 
 
 ### Synchronization Word
-The Synchronization word's primary purpose is to mark the exact start of valid data in a signal. It can also help with network filtering, where a receiver can check the sync word of a signal and ignore signals that do not match the expected sync word. 
+The Synchronization (sync) word's primary purpose is to mark the exact start of valid data in a signal. It can also help with network filtering, where a receiver can check the sync word of a signal and ignore signals that do not match the expected sync word. 
 
 More information on the sync word can be found in section **14.3: Byte Synchronization**. The sync word value itself is arbitrary, but the receiver and the transmitter must match each other if it is used.
 
@@ -663,9 +663,11 @@ Page 77: `MDMCFG2.SYNC_MODE` Field
 
 ### Packet Length
 The CC1101 expects a packet length mode to be configured in the `PKTCTRL0.LENGTH_CONFIG` field at `0x08`. There are three different modes for packet length...
-1. Fixed packet length mode: the packet length is predefined and must be the same for every transmission. This length will have to be configured separately in the `PKTLEN` register at `0x06`. This is the mode we will be using in our implementation later on.
+1. Fixed packet length mode: the packet length is predefined and must be the same for every transmission. This length (in bytes) must be configured separately in the `PKTLEN` register at `0x06`. This is the mode we will be using in our implementation later on.
 2. Variable packet length mode: the length of the packet is set by the first byte written to the TX FIFO instead of the `PKTLEN` register. Sequentially, this byte appears after the sync word.
 3. Infinite packet length mode: there is no set length of the packet, and the CC1101 will continually transmit data it is given. 
+
+Packet length settings do not include preamble bits or the sync word in the byte count.
 
 >Note: The maximum packet length for fixed and variable packet length modes is 255 bytes. Use infinite packet length mode for payloads longer than 255. When working with packets longer than 64 bytes, consider **Section 15.6: Packet Handling in Firmware**.
 
@@ -692,7 +694,7 @@ As seen earlier in the [simplified radio control diagram](https://github.com/rya
 
 Every time the radio starts up, it should be [reset with the `SRES` strobe](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#cc1101-initialization-procedure) and put into IDLE mode. To transmit data, we have to go from the `IDLE` state to the `TX` state. Luckily, we can reach this mode with a single command strobe called `STX` located at address `0x35`.
 
-There is one more aspect of the radio state that should be considered before transmitting a signal: calibrating the [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer). We can enable automatic calibration when entering `TX` mode with the `MCSM0.FS_AUTOCAL` field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
+There is one more aspect of the radio state that should be considered before transmitting a signal: calibrating the [frequency synthesizer](https://en.wikipedia.org/wiki/Frequency_synthesizer). We can enable automatic calibration when entering `TX` mode with the [`MCSM0.FS_AUTOCAL`](#Assets/MCSM0.png) field at `0x18` by sending the byte `0x14`. This will preserve the defaults while only changing the value of `FS_AUTOCAL`.
 
 Shown below is the `MARCSTATE` register that will contain the current state the radio is in, which is useful for debugging purposes.
 
