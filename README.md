@@ -1075,25 +1075,50 @@ I (4367) CC1101: GDO0 level: 0
 Before attempting to send these 5 bytes, we only had 2 bytes in our TX FIFO. This means the radio will now enter the `TXFIFO_UNDERFLOW` state. We can confirm this since the chip status byte value is `0x70` and the `TXBYTES` register value is `0x80`.
 
 ## Proving the Transmission Was Successful
-I've set up a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework alongside the RadioLib library. In this code, I match all of the parameters we set in `main.cpp` including the desired frequency, bitrate, and modulation format. 
+I've created a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework with the RadioLib library to verify that our transmission worked. In that code, I matched all of the parameters configured in `main.cpp`, including frequency, bitrate, and modulation.
 
-The output of the code in that repository logs the following:
-```rust
+Using 2 ESP32s and 2 CC1101s, I set up a working demo. One pair was [flashed](https://en.wikipedia.org/wiki/Flash_memory) with the receiver code, and the other pair with the transmitter.
+
+The receiver logs the following data from the RX FIFO:
+```cjs
 [CC1101] Waiting for 5-byte packet...
 [CC1101] Timeout
-
 [CC1101] Waiting for 5-byte packet...
 [CC1101] Packet received
 Data:  D3 91 01 01 01
 RSSI:  -58.50 dBm
 LQI:   0
-
 [CC1101] Waiting for 5-byte packet...
 [CC1101] Packet received
-Data:  D3 91 01 01 DA  // corrupted / underflow artifact
+Data:  D3 91 01 01 DA  
 RSSI:  -55.00 dBm
 LQI:   26
 ```
+
+The receiver code continuously polls the RX FIFO for incoming packets. Recall from `main.cpp`:
+- The sync word was 32 bits (`0xD3` and `0x91` repeated)
+- The Packet length was 5 bytes
+- The TX FIFO was filled with 7 bytes of `0x01`
+- We entered `TX` mode twice
+
+The logs above generally reflect this scenario with a few issues. 
+
+---
+The first issue is that the sync word (`0xD3 0x91`) shows up in the RX FIFO. This is unexpected since the sync word is handled internally, and the RX FIFO should only capture bytes from the packet's data field. This issue was likely caused due to RadioLib defaulting to a 16-bit sync mode, while our transmitter used 32 bits. This caused the receiver to start filling two bytes too early.
+
+Because of that misalignment, the first packet appears truncated. The full 5 bytes of `0x01` were still transmitted, but not all were printed out in the log. That leaves only two valid bytes for the second transmission, which is expected.
+
+---
+The second issue is the bytes logged in the second transmission. It contains the 5 bytes `D3 91 01 01 DA`. The first two are the sync word, the next two is the remaining data from the TX FIFO, and the last byte is mysterious. 
+
+At first, I thought similar to how buffer underflow works in languages like C/CPP, the radio might have underflowed and grabbed the last value from the register in the address space below the TX FIFO, which would be `PATABLE`. 
+
+This wouldn't make sense though, as there was no byte `DA` ever programmed into the `PATABLE` register. We will just have to dismiss this byte as random noise sent when the TX FIFO underflowed.
+
+> To send and receive signals at the same time, I had to create a high tech setup on my basement floor...
+><div align="center">
+><img src="Assets/setup.png" width="60%">
+></div>
 
 # 8. Datasheet and Theory Abstraction in Libraries
 Transmitting a CC1101 signal with just the ESP-IDF framework necessitates a deep understanding of the datasheet as well as far more manual setup. Accomplishing the same goal with a framework requires minimal effort and little understanding of the theory. 
