@@ -911,7 +911,7 @@ Let's look at one example: suppose you want to write to the register `FREQ2`, wh
 
 ### First, pad the address to a full byte
 
-```
+```c
 0000 1111
 ```
 
@@ -919,13 +919,13 @@ Let's look at one example: suppose you want to write to the register `FREQ2`, wh
 
 For a read operation, the R/W bit is `1`, which corresponds to:
 
-```
+```c
 1000 0000
 ```
 
 ### Combine using bitwise OR
 
-```
+```c
 0000 1111
 1000 0000
 ---------
@@ -934,7 +934,7 @@ For a read operation, the R/W bit is `1`, which corresponds to:
 
 So, the final header byte we send becomes:
 
-```
+```c
 0x8F
 ```
 
@@ -976,7 +976,7 @@ At this point, we have:
 The final step is to examine the program in [`main.cpp`](https://github.com/ryan2625/CC1101-TX/blob/main/src/main.cpp) and analyze its output. We will see the constants defined at the top, then the helper functions, and finally the `app_main` function.
 
 It is encouraged to skim the program and connect the ideas we have discussed so far in the guide to the implementation. When we run the program, we get the following output: 
-```cpp
+```rust
 I (297) main_task: Calling app_main()
 I (1297) MAIN: Hello World...?
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
@@ -1008,7 +1008,7 @@ I (4367) main_task: Returned from app_main()
 ```
 ---
 The first part of the log is printed after loading 7 bytes into the TX FIFO and configuring all of our registers. As the comment states, these are all of our configuration values. I've attached comments to some of the logs below regarding their value or function...
-```text
+```rust
 I (2297) CC1101: ========== ALL CONFIG VALUES ==========
 I (2297) CC1101: Operation: READ AUTOCAL | 0x00 0x14
 I (2297) CC1101: Operation: READ FREQUENCY | 0x00 0x0C 0x1D 0x8A 
@@ -1052,7 +1052,7 @@ All of the values logged above correspond to the values we came up with in the p
 The next part of the logs is when we enter `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet. Upon a successful transmission completion, we should see the `TXOFF_MODE` putting our radio into the `FSTXON` state.
 
 After our radio finishes its transmission, we see the following logged to the console:
-```text
+```rust
 I (3367) CC1101: ============ AFTER 5 BYTES ============
 I (3367) CC1101: Operation: READ MARCSTATE | 0x30 0x12
 I (3367) CC1101: Operation: READ TXBYTES | 0x30 0x02 
@@ -1065,7 +1065,7 @@ Since we only have 2 bytes left and our TX FIFO threshold is 5, Our `GDO0` pin i
 ---
 
 The last thing we do is put our radio back into `TX` mode which will send another 5 bytes. 
-```text
+```rust
 I (4367) CC1101: ============ AFTER 10 BYTES ===========
 I (4367) CC1101: Operation: READ MARCSTATE | 0x70 0x16
 I (4367) CC1101: Operation: READ TXBYTES | 0x70 0x80 
@@ -1078,7 +1078,7 @@ Before attempting to send these 5 bytes, we only had 2 bytes in our TX FIFO. Thi
 I've set up a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework alongside the RadioLib library. In this code, I match all of the parameters we set in `main.cpp` including the desired frequency, bitrate, and modulation format. 
 
 The output of the code in that repository logs the following:
-```cpp
+```rust
 [CC1101] Waiting for 5-byte packet...
 [CC1101] Timeout
 
