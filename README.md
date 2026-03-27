@@ -1044,7 +1044,7 @@ All of the values logged above correspond to the values we came up with in the p
 
 ---
 
-The next part of the log is printed after we enter `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet. Upon a successful transmission completion, we should see the [`TXOFF_MODE`](https://github.com/ryan2625/ESP32-CC1101-Transmission?tab=readme-ov-file#tx-mode-scenarios) putting our radio into the `FSTXON` state.
+The next part of the log is printed after we enter `TX` mode which will automatically start sending preamble bits, the sync word, and a 5 byte packet. Upon a successful transmission completion, we should see the [`TXOFF_MODE`](https://github.com/ryan2625/ESP32-CC1101-Transmission?tab=readme-ov-file#tx-mode-scenarios) register putting our radio into the `FSTXON` state.
 
 ```rust
 I (3367) CC1101: ============ AFTER 5 BYTES ============
@@ -1054,7 +1054,7 @@ I (3367) CC1101: GDO0 level: 0
 ```
 As expected, our `MARCSTATE` register lets us know we are currently in the `FSXTON` state (corresponding to `0x12`). We also see from the `TXBYTES` register that we have exactly 2 (`0x02`) bytes in our TX FIFO. 
 
-Since we only have 2 bytes left and our TX FIFO threshold is 5, Our `GDO0` pin is now reading low.
+Since we only have 2 bytes left in our TX FIFO and our threshold is 5, Our `GDO0` pin is now reading low.
 
 ---
 
@@ -1069,9 +1069,9 @@ I (4367) CC1101: GDO0 level: 0
 Before attempting to send these 5 bytes, we only had 2 bytes in our TX FIFO. This means the radio will now enter the `TXFIFO_UNDERFLOW` state. We can confirm this since the chip status byte value is `0x70` and the `TXBYTES` register value is `0x80`.
 
 ## Proving the Transmission Was Successful
-I've created a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework with the RadioLib library to verify that our transmission worked. In that code, I matched all of the parameters configured in `main.cpp`, including frequency, bitrate, and modulation.
+I've created a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework with the RadioLib library to verify that our transmission worked. In that code, I matched all of the parameters configured in `main.cpp`, including frequency, bitrate, and modulation format.
 
-Using 2 ESP32s and 2 CC1101s, I set up a working demo. One pair was [flashed](https://en.wikipedia.org/wiki/Flash_memory) with the receiver code, and the other pair with the transmitter.
+Using 2 ESP32s and 2 CC1101s, I set up a working demo. One pair was [flashed](https://en.wikipedia.org/wiki/Flash_memory) with the receiver code, and the other pair with the transmitter code.
 
 The receiver logs the following data from the RX FIFO:
 ```cjs
