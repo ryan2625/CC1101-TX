@@ -1263,7 +1263,7 @@ A few of the values we explicitly set in our original program were redundant, as
 This is the classic abstraction tradeoff... the ease and speed of development with libraries vs the customization and performance without them. Most hobbyist projects will benefit from using a library, unless a deeper understanding of the hardware is sought out.
 
 ---
-This will be the end of this series on investigating the CC1101. If you would like to ask any questions or discuss embedded devices, feel free to reach out on [LinkedIn!](https://www.linkedin.com/in/ryan-freas/)
+This will be the end of this series on investigating the CC1101. If you would like to ask any questions or discuss embedded devices in general, feel free to reach out on [LinkedIn!](https://www.linkedin.com/in/ryan-freas/)
 ### Other Media
 <a id='spi_space'></a>
 <div align="center">
