@@ -472,18 +472,18 @@ Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/ma
 ## **Section 16: Modulation Formats** Overview
 The CC1101 supports amplitude, frequency, and phase modulation formats. For this guide, we will be focusing on a type of frequency modulation known as [2-FSK](https://en.wikipedia.org/wiki/Frequency-shift_keying) (binary frequency shift keying). An example of how 2-FSK works in practice can be found in the [Carrier Frequency](#carrier-frequency) section. 
 
-The register that stores the modulation format is named `MDMCFG2`. There is a table inside this register that shows we would need to send a value of `000` to the `MOD_FORMAT` field to specify 2-FSK as our format. The default value for this field is conveniently set to `000` already, so we technically don't have to worry about this register right now.
+The register that stores the modulation format is named `MDMCFG2`. There is a table inside this register that shows we would need to send a value of `000` to the `MOD_FORMAT` field to specify 2-FSK as our format. The default value for this field is conveniently set to `000` already, so we technically don't need to worry about this register right now.
 
 <div align="center">
 
 ![Mod Format Register](Assets/MOD_FORMAT.png)
 
-Page 77: Modulation Format Value Mappings in the `MDMCFG2.MOD_FORMAT` Field at address `0x12`
+Page 77: Setting Table for the `MDMCFG2.MOD_FORMAT` Field at Address `0x12`
 
 </div>
 
 ## Scientific Notation
-2-FSK works by shifting the frequency by an amount called the 'deviation.' To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. 
+2-FSK works by periodically shifting the frequency by amount called the 'deviation.' To calculate the deviation, the CC1101 uses two parameters: the deviation mantissa and the deviation exponent. 
 
 The mantissa allows fine adjustment of the deviation, while the exponent scales the deviation exponentially. These concepts are also used in [Scientific Notation](https://en.wikipedia.org/wiki/Scientific_notation). The mantissa and exponent values are configured in the `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` fields respectively at address `0x15`. 
 
