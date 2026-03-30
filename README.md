@@ -1102,7 +1102,7 @@ Transmitting a CC1101 signal with just the ESP-IDF framework necessitates a deep
 
 One framework that can help us set everything up faster is the [Arduino platform](https://docs.platformio.org/en/latest/frameworks/arduino.html) that gives us access to all of the ESP32 APIs. This, combined with a library specifically designed to communicate with the CC1101 such as [RadioLib](https://github.com/jgromes/RadioLib) allows for the two devices to be used together without ever having to read the datasheet.
 
----
+### SPI Configuration Steps
 
 The Arduino platform turns the SPI configuration code from the ESP-IDF:
 ```cpp
@@ -1139,7 +1139,7 @@ The code mapping of the two sections aren't exactly 1 to 1, but they essentially
 
 Setting up lower level SPI parameters such as clock speed and SPI mode are handled internally by the libraries, so they typically don't need to be explicitly set here.
 
----
+### Register Configuration Steps
 
 RadioLib turns the register values, configuration steps, and transmission steps from our original ESP-IDF code:
 ```cpp
