@@ -570,7 +570,7 @@ We now have all the appropriate values to substitute into the equation that tell
 
 Since the data rate mantissa is the only field contained within the [`MDMCFG3`](https://github.com/ryan2625/ESP32-CC1101-Transmission/blob/main/Assets/MDMCFG.png) register, we do not have to worry about preserving any other bits. We will send our value of 248 here in hexadecimal which works out to be `0xF8`. 
 
-The exponent part of the equation is contained in the [`MDMCFG4`](https://github.com/ryan2625/CC1101-TX/blob/main/Assets/MDMCFG.png) register, and it shares this register with fields for configuring the channel bandwidth. It is good practice to preserve the default values in these registers if we don't need to modify them. Therefore, we will send the bits `10` for `CHANBW_E`, `00` for `CHANBW_M`, and `1001` for `DRATE_E`. We end up with `10001001` = `0x89`. 
+We will store *DRATE_E* = 9 in the [`MDMCFG4`](https://github.com/ryan2625/CC1101-TX/blob/main/Assets/MDMCFG.png) register, which also contains the fields used to configure channel bandwidth. It is good practice to preserve the default values in these registers if we don't need to modify them. Therefore, we will send the bits `10` for `CHANBW_E`, `00` for `CHANBW_M`, and `1001` for `DRATE_E`. We end up with `10001001` = `0x89`. 
 
 <div align='center'>
 
