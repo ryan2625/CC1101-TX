@@ -1016,7 +1016,7 @@ I (4367) CC1101: Operation: READ TXBYTES | 0x70 0x80
 I (4367) CC1101: GDO0 level: 0
 ```
 
-Before attempting to send these 5 bytes, we only had 2 bytes in our TX FIFO. This means the radio will now enter the `TXFIFO_UNDERFLOW` state. We can confirm this since the chip status byte value is `0x70` and the `TXBYTES` register value is `0x80`.
+Before attempting to send these 5 bytes, we only had 2 bytes in our TX FIFO. This means the radio will now enter the `TXFIFO_UNDERFLOW` state. We can confirm this since the chip status byte value is `0x70`, the `MARCSTATE` register value is `0x16`, and the `TXBYTES` register value is `0x80`.
 
 ## Proving the Transmission Was Successful
 I've created a [simple program](https://github.com/ryan2625/CC1101-Receive-PoC) that can receive radio signals using the Arduino framework with the RadioLib library to verify that our transmission worked. In that code, I matched all of the parameters configured in `main.cpp`, including frequency, bitrate, and modulation format.
