@@ -234,17 +234,6 @@ Whenever we are writing firmware for an embedded device, we need to know how to 
 
 - **Section 19: Radio Control** - Describes important setup details and how the radio operates internally through state transitions. **Section 19.0** shows us the state control diagram, while **Section 19.1** tells us the exact sequence the device expects when it powers on.
 
-<div align="center">
-
-![Simplified Radio Control Diagram](Assets/simplified_state_diagram.png)
-
-Page 28: Simplified Radio Control Diagram
-
-</div>
-
-> [!NOTE]
-> The radio control diagram is a map that shows how the radio behaves internally. Essentially, the radio can only perform specific actions based on the current state it is in.<br><br>For example, the radio cannot enter the `TXFIFO_UNDERFLOW` state if it is in the `IDLE` state. It must first move through the required intermediate states like frequency synthesizer calibration and transmit mode. The radio can move through states automatically or manually using command strobes. <br><br>It is not necessary to understand every part of the diagram, but it is helpful to understand the general concept. The [full state control diagram](#entire_radio) can be found on page 50 of the datasheet. 
-
 ---
 
 ### Signal Configuration Sections
