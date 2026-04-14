@@ -566,7 +566,7 @@ To determine these values, we first solve for *DRATE_E*, since its equation rela
 
 Solving this equation gives us *DRATE_E* = 9.
 
-We now have all the appropriate values to substitute into the equation that tells us the value of *DRATE_M*. Solving that equation gives us *DRATE_M* ​≈ 248.12. We will round this to the nearest integer which will be 248, as the register for the mantissa is only 8 bits. This means it can only store integers between 0-255, no decimals.
+We now have all the appropriate values to substitute into the equation above that calculates the value of *DRATE_M*. Solving that equation gives us *DRATE_M* ​≈ 248.12. We will round this to the nearest integer which will be 248, as the register for the mantissa is only 8 bits. This means it can only store integers between 0-255, no decimals.
 
 Since the data rate mantissa is the only field contained within the [`MDMCFG3`](https://github.com/ryan2625/ESP32-CC1101-Transmission/blob/main/Assets/MDMCFG.png) register, we do not have to worry about preserving any other bits. We will send our value of 248 here in hexadecimal which works out to be `0xF8`. 
 
