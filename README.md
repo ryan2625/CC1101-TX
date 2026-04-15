@@ -619,7 +619,7 @@ The CC1101 expects a packet length mode to be configured in the `PKTCTRL0.LENGTH
 
 Packet length settings do not include preamble bits or the sync word in the byte count.
 
->Note: The maximum packet length for fixed and variable packet length modes is 255 bytes. Use infinite packet length mode for payloads longer than 255. When working with packets longer than 64 bytes, consider **Section 15.6: Packet Handling in Firmware**.
+>Note: The maximum packet length for fixed and variable packet length modes is 255 bytes. Use infinite packet length mode for payloads longer than 255. Additionally, when working with packets that exceed the TX FIFO's capacity (64 bytes), consider **Section 15.6: Packet Handling in Firmware**.
 
 <div align='center'>
 
