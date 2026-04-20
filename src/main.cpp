@@ -7,12 +7,10 @@
  * A program for transmitting a 315 MHz signal with the CC1101.
  * 
  * Disclaimer:
- * All in-line or block comments in this file
+ * All inline or block comments in this file
  * serve an important purpose. They are not 
  * your standard verbose AI nonsense :)
  ******************************************************************************/
-
-// Imports for ESP-IDF API, standard C++, and CC1101 interaction
 #include "esp_log.h"
 #include <cstdint>
 #include <string>
