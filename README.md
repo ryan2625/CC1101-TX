@@ -684,6 +684,7 @@ There are three different scenarios in `TX` mode that can occur either when writ
 2. The radio enters the `TXFIFO_UNDERFLOW` state
 3. TX FIFO Overflow occurs
 
+---
 The first scenario is activated when a transmission is completed without any errors. In this case, the `MCSM1.TXOFF_MODE` field at address `0x17` will automatically put the radio into one of four states.
 <div align='center'>
 
