@@ -474,7 +474,7 @@ Solving this results in *f<sub>dev</sub>* = **25.4 kHz**. Looking at the [`DEVIA
 
 # 4. Bit Timing and Data Rate
 ## **Section 12: Data Rate Programming** Overview
-The data rate of the radio determines how fast data is transmitted or received. Similar to how we stored the deviation for 2-FSK modulation, we will store the mantissa and exponent calculated from the data rate equation into registers instead of the literal data rate value. 
+The data rate of the radio determines how fast data is transmitted or received. Similar to how we stored the deviation for 2-FSK modulation, we will store the mantissa and exponent calculated from the data rate equation into registers, rather than storing the literal data rate value. 
 
 The CC1101 will then use the mantissa & exponent values to derive the data rate in baud (which is a unit of transmission speed). The relevant fields for this section are the `MDMCFG3.DRATE_M` and `MDMCFG4.DRATE_E` fields.
 
