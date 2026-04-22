@@ -662,10 +662,10 @@ The TX/RX FIFOs are accessed through the address `0x3F`. This area does not refe
 
 Below are the possible FIFO access [header bytes](https://github.com/ryan2625/ESP32-CC1101?tab=readme-ov-file#expected-transaction-format) from **Section 10.5** and their respective functionalities. A R/W bit set to `0` corresponds to TX FIFO access, while a `1` corresponds to RX FIFO access.
 
-- 0x3F: Single byte access to TX FIFO
-- 0x7F: Burst access to TX FIFO
-- 0xBF: Single byte access to RX FIFO
-- 0xFF: Burst access to RX FIFO
+- `0x3F`: Single byte access to TX FIFO
+- `0x7F`: Burst access to TX FIFO
+- `0xBF`: Single byte access to RX FIFO
+- `0xFF`: Burst access to RX FIFO
 
 For example, after sending the byte `0x7F`, every subsequent byte sent in the same SPI transaction will be written into the TX FIFO.
 
