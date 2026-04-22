@@ -270,7 +270,7 @@ Every radio transmission has specific parameters that must be configured, regard
 
 - **Section 21: Frequency Programming** - Provides the relevant equations and registers for setting up the frequency the CC1101 will transmit at. You will also find information about setting up different frequency channels, where you can switch between multiple frequencies quickly (such as 315 MHz, 433 MHz, and 915 MHz).
 
-- **Section 16: Modulation Formats** - Talks about the different types of modulation formats the CC1101 is capable of implementing
+- **Section 16: Modulation Formats** - Talks about the different types of modulation formats the CC1101 is capable of implementing.
 
 - **Section 12: Data Rate Programming** - Discusses how to calculate and configure the data rate, which is how fast we send bits with our radio. 
 
