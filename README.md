@@ -579,7 +579,7 @@ Preamble bits (or bytes) are a sequence of alternating bits sent at the start of
 
 The second purpose is that they assist in synchronizing the transmission timing between the receiver and the transmitter to ensure data is processed correctly. The overall purpose of the preamble bits is to help tune the receiver before meaningful data is sent.
 
-In the CC1101, the amount of preamble bytes sent is configured in the `MDMCFG1.NUM_PREAMBLE` field at `0x13`. The datasheet recommends using a 4-byte preamble (32 bits) which corresponds to setting 2 of the field. When the radio enters `TX` mode, it will keep transmitting the preamble bytes you configured infinitely until a byte is written to the TX FIFO. 
+In the CC1101, the amount of preamble bytes sent is configured in the `MDMCFG1.NUM_PREAMBLE` field at `0x13`. The datasheet recommends using 4 bytes for the preamble (32 bits) which corresponds to setting 2 of the field. When the radio enters `TX` mode, it will keep transmitting the preamble bytes you configured infinitely until a byte is written to the TX FIFO (we will go over what this looks like shortly). 
 
 <div align='center'>
 
