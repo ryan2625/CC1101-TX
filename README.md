@@ -1256,6 +1256,8 @@ This is the classic abstraction tradeoff... the ease and speed of development wi
 
 ---
 This will be the end of this series on investigating the CC1101. If you would like to ask any questions or discuss embedded devices in general, feel free to reach out on [LinkedIn!](https://www.linkedin.com/in/ryan-freas/)
+
+If you would like to contribute, please see the [contributions guide inside of this repository](https://github.com/ryan2625/ESP32-CC1101-Transmission/blob/main/CONTRIBUTING.md).
 ### Other Media
 <a id='spi_space'></a>
 <div align="center">
