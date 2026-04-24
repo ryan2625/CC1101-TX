@@ -419,9 +419,9 @@ Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/ma
 
 | Register | Register Address | Updated Register Value | Purpose                  |
 | -------- | ---------------: | ---------------------: | ------------------------ |
-| FREQ2    |             0x0D |                   0x0C | Frequency  byte 2 |
-| FREQ1    |             0x0E |                   0x1D | Frequency  byte 1 |
-| FREQ0    |             0x0F |                   0x8A | Frequency  byte 0 |
+| `FREQ2` | `0x0D` | `0x0C` | Frequency  byte 2 |
+| `FREQ1` | `0x0E` | `0x1D` | Frequency  byte 1 |
+| `FREQ0` | `0x0F` | `0x8A` | Frequency  byte 0 |
 
 </div>
 
@@ -489,9 +489,9 @@ Solving this results in *f<sub>dev</sub>* = **25.4 kHz**. Looking at the [`DEVIA
 
 | Register            | Register Address | Updated Register Value | Purpose                           |
 | ------------------- | ---------------: | ---------------------: | --------------------------------- |
-| MDMCFG2.MOD_FORMAT  |             0x12 |                   0x03 | 2-FSK modulation format  |
-| DEVIATN.DEVIATION_E |             0x15 |                   0x40 | Frequency deviation exponent      |
-| DEVIATN.DEVIATION_M |             0x15 |                   0x40 | Frequency deviation mantissa      |
+| `MDMCFG2.MOD_FORMAT` | `0x12` | `0x03` | 2-FSK modulation format  |
+| `DEVIATN.DEVIATION_E` | `0x15` | `0x40` | Frequency deviation exponent      |
+| `DEVIATN.DEVIATION_M` | `0x15` | `0x40` | Frequency deviation mantissa      |
 
 </div>
 
@@ -562,8 +562,8 @@ We will store *DRATE_E* = 9 in the [`MDMCFG4`](https://github.com/ryan2625/CC110
 
 | Register        | Register Address | Updated Register Value | Purpose            |
 | --------------- | ---------------: | ---------------------: | ------------------ |
-| MDMCFG4.DRATE_E |             0x10 |                   0x89 | Data rate exponent |
-| MDMCFG3.DRATE_M |             0x11 |                   0xF8 | Data rate mantissa |
+| `MDMCFG4.DRATE_E` | `0x10` | `0x89` | Data rate exponent |
+| `MDMCFG3.DRATE_M` | `0x11` | `0xF8` | Data rate mantissa |
 
 
 </div>
@@ -591,7 +591,7 @@ The `PATABLE` register is located at address `0x3E`. Since we are only setting a
 
 | Register   | Register Address | Updated Register Value | Purpose               |
 | ---------- | ---------------: | ---------------------: | --------------------- |
-| PATABLE[0] |             0x3E |                   0x51 | Output transmit power |
+| `PATABLE[0]` | `0x3E` | `0x51` | Output transmit power |
 
 
 </div>
@@ -864,17 +864,17 @@ extern "C" void app_main(void) {
 
 | Register               | Register Address | Updated Register Value | Purpose                                          |
 | ---------------------- | ---------------: | ---------------------: | ------------------------------------------------ |
-| MDMCFG1.NUM_PREAMBLE   |             0x13 |                   0x22 | 4-byte preamble                                  |
-| SYNC1                  |             0x04 |                   0xD3 | Sync word byte 1                                 |
-| SYNC0                  |             0x05 |                   0x91 | Sync word byte 0                                 |
-| MDMCFG2.SYNC_MODE      |             0x12 |                   0x03 | 30/32 sync word bits detected; sync word enabled |
-| PKTCTRL0.LENGTH_CONFIG |             0x08 |                   0x00 | Fixed packet length mode                         |
-| PKTLEN                 |             0x06 |                   0x05 | 5-byte packet length                             |
-| MCSM0.FS_AUTOCAL       |             0x18 |                   0x14 | Auto-calibrate when entering TX mode             |
-| MCSM1.TXOFF_MODE       |             0x17 |                   0x31 | Enter FSTXON after TX completes                  |
-| FIFOTHR.FIFO_THR       |             0x03 |                   0x0E | TX FIFO threshold = 5 bytes                      |
-| IOCFG0.GDO0_CFG        |             0x02 |                   0x02 | GDO0 signals TX FIFO threshold                   |
-| TX FIFO                |             0x3F |               0x01 x 7 | Payload bytes loaded for transmission            |
+| `MDMCFG1.NUM_PREAMBLE` | `0x13` | `0x22` | 4-byte preamble                                  |
+| `SYNC1` | `0x04` | `0xD3` | Sync word byte 1                                 |
+| `SYNC0` | `0x05` | `0x91` | Sync word byte 0                                 |
+| `MDMCFG2.SYNC_MODE` | `0x12` | `0x03` | 30/32 sync word  |
+| `PKTCTRL0.LENGTH_CONFIG` | `0x08` | `0x00` | Fixed packet length mode                         |
+| `PKTLEN` | `0x06` | `0x05` | 5-byte packet length                             |
+| `MCSM0.FS_AUTOCAL` | `0x18` | `0x14` | Auto-calibrate when entering TX mode             |
+| `MCSM1.TXOFF_MODE` | `0x17` | `0x31` | Enter FSTXON after TX completes                  |
+| `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | TX FIFO threshold = 5 bytes                      |
+| `IOCFG0.GDO0_CFG` | `0x02` | `0x02` | GDO0 signals TX FIFO threshold                   |
+| TX FIFO | `0x3F` | `0x01` x 7 | Payload bytes loaded for transmission            |
 
 </div>
  
