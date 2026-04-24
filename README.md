@@ -422,6 +422,8 @@ Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/ma
 | `FREQ1` | `0x0E` | `0x1D` | Frequency  byte 1 |
 | `FREQ0` | `0x0F` | `0x8A` | Frequency  byte 0 |
 
+> Note: Each section will provide a summary of its relevant register values and locations. The full table can be found at the [end of this guide](#register_summary).
+
 </div>
 
 # 3. Modulation Format
@@ -1273,4 +1275,35 @@ Table 45: Entire SPI Address Space
 <img src="Assets/entire_radio_state.png" width="95%">
 
 Figure 25: Complete Radio Control State Diagram
+</div>
+
+---
+
+<a id='register_summary'></a>
+<div align="center">
+
+| Register | Register Address | Updated Register Value | Purpose                  |
+| -------- | ---------------: | ---------------------: | ------------------------ |
+| `FREQ2` | `0x0D` | `0x0C` | Frequency  byte 2 |
+| `FREQ1` | `0x0E` | `0x1D` | Frequency  byte 1 |
+| `FREQ0` | `0x0F` | `0x8A` | Frequency  byte 0 |
+| `MDMCFG2.MOD_FORMAT` | `0x12` | `0x03` | 2-FSK modulation format  |
+| `DEVIATN.DEVIATION_E` | `0x15` | `0x40` | Frequency deviation exponent      |
+| `DEVIATN.DEVIATION_M` | `0x15` | `0x40` | Frequency deviation mantissa      |
+| `MDMCFG4.DRATE_E` | `0x10` | `0x89` | Data rate exponent |
+| `MDMCFG3.DRATE_M` | `0x11` | `0xF8` | Data rate mantissa |
+| `PATABLE[0]` | `0x3E` | `0x51` | Output transmit power |
+| `MDMCFG1.NUM_PREAMBLE` | `0x13` | `0x22` | 4-byte preamble                                  |
+| `SYNC1` | `0x04` | `0xD3` | Sync word byte 1                                 |
+| `SYNC0` | `0x05` | `0x91` | Sync word byte 0                                 |
+| `MDMCFG2.SYNC_MODE` | `0x12` | `0x03` | Repeated 2-byte sync word  |
+| `PKTCTRL0.LENGTH_CONFIG` | `0x08` | `0x00` | Fixed packet length mode                         |
+| `PKTLEN` | `0x06` | `0x05` | 5-byte packet length                             |
+| `MCSM0.FS_AUTOCAL` | `0x18` | `0x14` | Auto-calibrate when entering TX mode             |
+| `MCSM1.TXOFF_MODE` | `0x17` | `0x31` | Enter FSTXON after TX completes                  |
+| `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | 5-byte TX FIFO threshold                      |
+| `IOCFG0.GDO0_CFG` | `0x02` | `0x02` | GDO0 signals TX FIFO threshold                   |
+| TX FIFO | `0x3F` | `0x01` x 7 | Payload bytes loaded for transmission            |
+
+All Register Values, Addresses, and Purposes
 </div>
