@@ -869,7 +869,7 @@ extern "C" void app_main(void) {
 | `PKTLEN` | `0x06` | `0x05` | 5-byte packet length                             |
 | `MCSM0.FS_AUTOCAL` | `0x18` | `0x14` | Auto-calibrate when entering TX mode             |
 | `MCSM1.TXOFF_MODE` | `0x17` | `0x31` | Enter FSTXON after TX completes                  |
-| `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | 5-byte TX FIFO threshold                      |
+| `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | TX FIFO threshold set to 5 bytes                      |
 | `IOCFG0.GDO0_CFG` | `0x02` | `0x02` | GDO0 signals TX FIFO threshold                   |
 | TX FIFO | `0x3F` | `0x01` x 7 | Payload bytes loaded for transmission            |
 
@@ -1301,9 +1301,9 @@ Figure 25: Complete Radio Control State Diagram
 | `PKTLEN` | `0x06` | `0x05` | 5-byte packet length                             |
 | `MCSM0.FS_AUTOCAL` | `0x18` | `0x14` | Auto-calibrate when entering TX mode             |
 | `MCSM1.TXOFF_MODE` | `0x17` | `0x31` | Enter FSTXON after TX completes                  |
-| `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | 5-byte TX FIFO threshold                      |
+| `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | TX FIFO threshold set to 5 bytes                      |
 | `IOCFG0.GDO0_CFG` | `0x02` | `0x02` | GDO0 signals TX FIFO threshold                   |
 | TX FIFO | `0x3F` | `0x01` x 7 | Payload bytes loaded for transmission            |
 
-All Register Values, Addresses, and Purposes
+All Relevant Register Values, Addresses, and Purposes
 </div>
