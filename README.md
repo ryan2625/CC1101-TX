@@ -293,8 +293,6 @@ Note that parameters such as the frequency can only be changed while the radio i
 
 The frequency is stored as a 24-bit word split across three registers containing 1 byte each: `FREQ2`, `FREQ1`, and `FREQ0`. Table 45 shows part of the CC1101's address space, where you can see the addresses of each frequency register (`0x0D`, `0x0E`, and `0x0F` respectively).
 
-> [!IMPORTANT]
-> This 24 bit word is not representing a frequency such as 315 MHz. Rather, it is a value the CC1101 will use to derive the frequency using its equations. Also, a 'word' in this context simply means a collection of bits.
 
 <div align="center">
 
@@ -303,6 +301,9 @@ The frequency is stored as a 24-bit word split across three registers containing
 Table 45: SPI Address Space
 
 </div>
+
+> [!IMPORTANT]
+> This 24 bit word is not representing a frequency such as 315 MHz. Rather, it is a value the CC1101 will use to derive the frequency using its equations. Also, a 'word' in this context simply means a collection of bits.
 
 ## Calculating the Frequency
 There are multiple equations in the frequency section. The equation regarding IF (intermediate frequencies) is only used for receiving signals. It converts the signal the radio receives into a lower frequency, as higher frequencies are more difficult to process. We do not have to solve for the equation below.
