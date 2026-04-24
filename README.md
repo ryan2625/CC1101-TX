@@ -667,6 +667,19 @@ There are a few other optional packet features that we will not be implementing 
 - CRC ([Cyclic Redundancy Check](https://en.wikipedia.org/wiki/Cyclic_redundancy_check)) Checksum, an error detection method that will let the receiver know if the packet is corrupted.
 - The Address Byte, which is a byte dedicated towards address filtering. Similar to the sync word, this enables receivers to ignore irrelevant traffic and only look at signals with a specific address byte.
 
+#### Packet Features Register Summary
+<div align='center'>
+
+| Register               | Register Address | Updated Register Value | Purpose                                          |
+| ---------------------- | ---------------: | ---------------------: | ------------------------------------------------ |
+| `MDMCFG1.NUM_PREAMBLE` | `0x13` | `0x22` | 4-byte preamble                                  |
+| `SYNC1` | `0x04` | `0xD3` | Sync word byte 1                                 |
+| `SYNC0` | `0x05` | `0x91` | Sync word byte 0                                 |
+| `MDMCFG2.SYNC_MODE` | `0x12` | `0x03` | Repeated 2-byte sync word  |
+| `PKTCTRL0.LENGTH_CONFIG` | `0x08` | `0x00` | Fixed packet length mode                         |
+| `PKTLEN` | `0x06` | `0x05` | 5-byte packet length                             | 
+
+</div>
 
 ## Transmission Mechanics and the Data FIFO 
 
@@ -861,12 +874,6 @@ extern "C" void app_main(void) {
 
 | Register               | Register Address | Updated Register Value | Purpose                                          |
 | ---------------------- | ---------------: | ---------------------: | ------------------------------------------------ |
-| `MDMCFG1.NUM_PREAMBLE` | `0x13` | `0x22` | 4-byte preamble                                  |
-| `SYNC1` | `0x04` | `0xD3` | Sync word byte 1                                 |
-| `SYNC0` | `0x05` | `0x91` | Sync word byte 0                                 |
-| `MDMCFG2.SYNC_MODE` | `0x12` | `0x03` | Repeated 2-byte sync word  |
-| `PKTCTRL0.LENGTH_CONFIG` | `0x08` | `0x00` | Fixed packet length mode                         |
-| `PKTLEN` | `0x06` | `0x05` | 5-byte packet length                             |
 | `MCSM0.FS_AUTOCAL` | `0x18` | `0x14` | Auto-calibrate when entering TX mode             |
 | `MCSM1.TXOFF_MODE` | `0x17` | `0x31` | Enter FSTXON after TX completes                  |
 | `FIFOTHR.FIFO_THR` | `0x03` | `0x0E` | TX FIFO threshold set to 5 bytes                      |
