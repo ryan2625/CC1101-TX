@@ -417,7 +417,7 @@ Where [`spi_transaction`](https://github.com/ryan2625/CC1101-TX/blob/main/src/ma
 #### Frequency Register Summary
 <div align='center'>
 
-| Register | Register Address | Updated Register Value | Purpose                  |
+| Register | Register Address | Entire Updated Register Value | Purpose                  |
 | -------- | ---------------: | ---------------------: | ------------------------ |
 | `FREQ2` | `0x0D` | `0x0C` | Frequency  byte 2 |
 | `FREQ1` | `0x0E` | `0x1D` | Frequency  byte 1 |
@@ -488,7 +488,7 @@ Solving this results in *f<sub>dev</sub>* = **25.4 kHz**. Looking at the [`DEVIA
 #### Modulation Register Summary
 <div align='center'>
 
-| Register            | Register Address | Updated Register Value | Purpose                           |
+| Register            | Register Address | Entire Updated Register Value | Purpose                           |
 | ------------------- | ---------------: | ---------------------: | --------------------------------- |
 | `MDMCFG2.MOD_FORMAT` | `0x12` | `0x00` | 2-FSK modulation format  |
 | `DEVIATN.DEVIATION_E` | `0x15` | `0x40` | Frequency deviation exponent      |
@@ -562,7 +562,7 @@ We will store *DRATE_E* = 9 in the [`MDMCFG4`](https://github.com/ryan2625/CC110
 #### Data Rate Register Summary
 <div align='center'>
 
-| Register        | Register Address | Updated Register Value | Purpose            |
+| Register        | Register Address | Entire Updated Register Value | Purpose            |
 | --------------- | ---------------: | ---------------------: | ------------------ |
 | `MDMCFG4.DRATE_E` | `0x10` | `0x89` | Data rate exponent |
 | `MDMCFG3.DRATE_M` | `0x11` | `0xF8` | Data rate mantissa |
@@ -590,7 +590,7 @@ The `PATABLE` register is located at address `0x3E`. Since we are only setting a
 #### Output Power Register Summary
 <div align='center'>
 
-| Register   | Register Address | Updated Register Value | Purpose               |
+| Register   | Register Address | Entire Updated Register Value | Purpose               |
 | ---------- | ---------------: | ---------------------: | --------------------- |
 | `PATABLE[0]` | `0x3E` | `0x51` | Output transmit power |
 
@@ -673,7 +673,7 @@ There are a few other optional packet features that we will not be implementing 
 #### Packet Features Register Summary
 <div align='center'>
 
-| Register               | Register Address | Updated Register Value | Purpose                                          |
+| Register               | Register Address | Entire Updated Register Value | Purpose                                          |
 | ---------------------- | ---------------: | ---------------------: | ------------------------------------------------ |
 | `MDMCFG1.NUM_PREAMBLE` | `0x13` | `0x22` | 4-byte preamble                                  |
 | `SYNC1` | `0x04` | `0xD3` | Sync word byte 1                                 |
@@ -875,7 +875,7 @@ extern "C" void app_main(void) {
 #### Transmission Mechanics Register Summary
 <div align='center'>
 
-| Register               | Register Address | Updated Register Value | Purpose                                          |
+| Register               | Register Address | Entire Updated Register Value | Purpose                                          |
 | ---------------------- | ---------------: | ---------------------: | ------------------------------------------------ |
 | `MCSM0.FS_AUTOCAL` | `0x18` | `0x14` | Auto-calibrate when entering TX mode             |
 | `MCSM1.TXOFF_MODE` | `0x17` | `0x31` | Enter FSTXON after TX completes                  |
@@ -1292,7 +1292,7 @@ Figure 25: Complete Radio Control State Diagram
 <a id='register_summary'></a>
 <div align="center">
 
-| Register | Register Address | Updated Register Value | Purpose                  |
+| Register | Register Address | Entire Updated Register Value | Purpose                  |
 | -------- | ---------------: | ---------------------: | ------------------------ |
 | `FREQ2` | `0x0D` | `0x0C` | Frequency  byte 2 |
 | `FREQ1` | `0x0E` | `0x1D` | Frequency  byte 1 |
