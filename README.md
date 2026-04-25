@@ -1297,7 +1297,7 @@ Figure 25: Complete Radio Control State Diagram
 | `FREQ2` | `0x0D` | `0x0C` | Frequency  byte 2 |
 | `FREQ1` | `0x0E` | `0x1D` | Frequency  byte 1 |
 | `FREQ0` | `0x0F` | `0x8A` | Frequency  byte 0 |
-| `MDMCFG2.MOD_FORMAT` | `0x12` | `0x03` | 2-FSK modulation format / Sync Mode  |
+| `MDMCFG2.MOD_FORMAT` | `0x12` | `0x00` | 2-FSK modulation format (value to be changed later by sync mode field  |
 | `DEVIATN.DEVIATION_E` | `0x15` | `0x40` | Frequency deviation exponent      |
 | `DEVIATN.DEVIATION_M` | `0x15` | `0x40` | Frequency deviation mantissa      |
 | `MDMCFG4.DRATE_E` | `0x10` | `0x89` | Data rate exponent |
