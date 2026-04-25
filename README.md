@@ -496,7 +496,7 @@ Solving this results in *f<sub>dev</sub>* = **25.4 kHz**. Looking at the [`DEVIA
 
 </div>
 
->Note: The `MDMCFG2` register can be set to `0x00` now, but it also contains another important field we will change later on in this guide. Additionally, the register value is identical for `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` because they share the same register, even though the field values themselves are different.
+>Note: The `MDMCFG2` register can be set to `0x00` now, but it also contains another important field we will change later on in this guide. Additionally, the register values are identical for `DEVIATN.DEVIATION_M` and `DEVIATN.DEVIATION_E` because they share the same register, even though the field values themselves are different.
 
 # 4. Bit Timing and Data Rate
 ## **Section 12: Data Rate Programming** Overview
