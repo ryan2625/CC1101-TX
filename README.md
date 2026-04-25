@@ -1301,7 +1301,7 @@ Figure 25: Complete Radio Control State Diagram
 | `DEVIATN.DEVIATION_E` | `0x15` | `0x40` | Frequency deviation exponent      |
 | `DEVIATN.DEVIATION_M` | `0x15` | `0x40` | Frequency deviation mantissa      |
 | `MDMCFG4.DRATE_E` | `0x10` | `0x89` | Data rate exponent |
-| `MDMCFG3.DRATE_M` | `0x11` | `0xF8` | Data rate mantissa |
+| `MDMCFG3` | `0x11` | `0xF8` | Data rate mantissa |
 | `PATABLE[0]` | `0x3E` | `0x51` | Output transmit power |
 | `MDMCFG1.NUM_PREAMBLE` | `0x13` | `0x22` | 4-byte preamble                                  |
 | `SYNC1` | `0x04` | `0xD3` | Sync word byte 1                                 |
